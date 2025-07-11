@@ -1,0 +1,41 @@
+{
+  "name": "bymayo/craft-content-freeze",
+  "description": "Allows a content freeze in the CMS",
+  "type": "craft-plugin",
+  "license": "mit",
+  "support": {
+    "email": "jason@bymayo.co.uk",
+    "issues": "https://github.com/bymayo/craft-content-freeze/issues?state=open",
+    "source": "https://github.com/bymayo/craft-content-freeze",
+    "docs": "https://github.com/bymayo/craft-content-freeze",
+    "rss": "https://github.com/bymayo/craft-content-freeze/releases.atom"
+  },
+  "require": {
+    "php": ">=8.2",
+    "craftcms/cms": "^5.7.0"
+  },
+  "require-dev": {
+    "craftcms/phpstan": "dev-main"
+  },
+  "autoload": {
+    "psr-4": {
+      "bymayo\\craftcontentfreeze\\": "src/"
+    }
+  },
+  "extra": {
+    "handle": "content-freeze",
+    "name": "Content Freeze",
+    "developer": "Jason Mayo",
+    "documentationUrl": "https://github.com/bymayo/craft-content-freeze"
+  },
+  "config": {
+    "sort-packages": true,
+    "platform": {
+      "php": "8.2"
+    },
+    "allow-plugins": {
+      "yiisoft/yii2-composer": true,
+      "craftcms/plugin-installer": true
+    }
+  }
+}
