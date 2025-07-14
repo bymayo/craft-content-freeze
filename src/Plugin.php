@@ -11,6 +11,12 @@ use craft\events\PluginEvent;
 use craft\base\Plugin as CraftPlugin;
 use craft\base\Plugin as BasePlugin;
 use craft\helpers\FileHelper;
+use yii\web\User;
+use craft\helpers\UrlHelper;
+use craft\web\UrlManager;
+use craft\events\RegisterUrlRulesEvent;
+use craft\events\RegisterCpAlertsEvent;
+use craft\helpers\Cp as CpHelper;
 
 /**
  * Content Freeze plugin
@@ -46,11 +52,8 @@ class Plugin extends BasePlugin
         parent::init();
 
         $this->attachEventHandlers();
-
-        // Any code that creates an element query or loads Twig should be deferred until
-        // after Craft is fully initialized, to avoid conflicts with other plugins/modules
+        
         Craft::$app->onInit(function() {
-            // ...
         });
     }
 
@@ -99,15 +102,58 @@ class Plugin extends BasePlugin
             Plugin::class,
             Plugin::EVENT_AFTER_SAVE_SETTINGS,
             function (Event $event) {
-                // Check if this event is for our plugin
-                // if (in_array('content-freeze', $event->plugins)) {
-                    $this->log("Content Freeze plugin settings saved");
 
-                    $plugin = $event->sender;
+                $plugin = $event->sender;
+                $this->handleSettingsSave($plugin->getSettings());
 
-                    $this->handleSettingsSave($plugin->getSettings());
+            }
+        );
 
-                // }
+        Event::on(
+            UrlManager::class,
+            UrlManager::EVENT_REGISTER_CP_URL_RULES,
+            function(RegisterUrlRulesEvent $event) {
+                $event->rules['content-freeze'] = 'content-freeze/pane/content-freeze';
+            }
+        );
+
+        Event::on(
+            CpHelper::class,
+            CpHelper::EVENT_REGISTER_ALERTS,
+            function (RegisterCpAlertsEvent $event) {
+
+                $settings = $this->getSettings();
+
+                if ($settings->enabled && $settings->showNoticeBar) {
+
+                    $event->alerts = array_merge($event->alerts, [
+                        [
+                            'content' => $settings->noticeBarText,
+                            'showIcon' => true,
+                        ],
+                    ]);
+
+                }
+            }
+        );
+
+        Event::on(
+            User::class,
+            User::EVENT_AFTER_LOGIN,
+            function() {
+
+                $user = Craft::$app->getUser();
+                $request = Craft::$app->getRequest();
+
+                if ($request->getIsCpRequest()) {
+
+                    $settings = $this->getSettings();
+
+                    if ($settings->enabled && $settings->showNoticePane) {
+                        $user->setReturnUrl(UrlHelper::cpUrl('content-freeze'));
+                    }
+
+                }
             }
         );
 
@@ -125,14 +171,12 @@ class Plugin extends BasePlugin
 
             $groupSettings = $settings['memberGroups'][$group->id] ?? null;
 
-            if ($groupSettings !== null && $groupSettings['enable']) {
+            if ($groupSettings !== null && $groupSettings['enabled']) {
 
-                if ($settings['enable']) {
-                    $this->log("Moving users from " . $group->id . " to " . $groupSettings['contentFreezeGroup']);
+                if ($settings['enabled']) {
                     $this->userGroups->moveUsers($group->id, $groupSettings['contentFreezeGroup']);
                 }
                 else {
-                    $this->log("Moving users from " . $groupSettings['contentFreezeGroup'] . " to " . $group->id);
                     $this->userGroups->moveUsers($groupSettings['contentFreezeGroup'], $group->id);
                 }
 

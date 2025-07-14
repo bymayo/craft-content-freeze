@@ -1,0 +1,38 @@
+{% extends '_layouts/base' %}
+
+{% import '_includes/forms.twig' as forms %}
+
+{% set bodyClass = 'licensing-issues' %}
+{% set title = 'License purchase required.'|t('app') %}
+
+{% block body %}
+  <div id="licensing-issues" class="pane">
+    <div class="readable">
+      <h1>
+        {{ settings.noticePaneHeading }}
+      </h1>
+    <p>
+        {{ settings.noticePaneText|replace(
+            {
+                '{dateFrom}': settings.dateFrom.date, 
+                '{dateTo}': settings.dateTo.date
+            }
+        ) }}
+      </p>
+
+      {{ tag('a', {
+            class: ['btn', 'link-btn'],
+            href: '/admin',
+            text: 'Continue',
+            aria: {label: 'Continue'},
+          }) }}
+
+    </div>
+  </div>
+{% endblock %}
+
+{% css %}
+  html {
+    height: 100%;
+  }
+{% endcss %}

@@ -1,35 +1,28 @@
 {% import '_includes/forms.twig' as forms %}
 
-{% if craft.app.session.hasFlash('notice') %}
-    <div class="notice">{{ craft.app.session.getFlash('notice') }}</div>
-{% endif %}
-{% if craft.app.session.hasFlash('error') %}
-    <div class="error">{{ craft.app.session.getFlash('error') }}</div>
-{% endif %}
-
 <fieldset>
 
 	<h2>General Plugin Settings</h2>
 
     {{ forms.lightswitchField({
-        label: 'Enable',
-        id: 'enable',
-        name: 'enable',
-        on: settings.enable
+        label: 'Enabled',
+        id: 'enabled',
+        name: 'enabled',
+        on: settings.enabled
     }) }}
 
     {{ forms.dateField({
-        label: 'Freeze From',
+        label: 'Date From',
         id: 'dateFrom',
         name: 'dateFrom',
-        value: settings.dateFrom
+        value: settings.dateFrom.date ? settings.dateFrom : false
     }) }}
 
     {{ forms.dateField({
-        label: 'Freeze To',
+        label: 'Date To',
         id: 'dateTo',
         name: 'dateTo',
-        value: settings.dateTo
+        value: settings.dateTo.date ? settings.dateTo : false
     }) }}
 
  </fieldset>
@@ -66,8 +59,8 @@
                     <td>
                         {{ forms.lightswitchField({
                             id: '',
-                            name: 'memberGroups[' ~ group.id ~ '][enable]',
-                            on: settings.memberGroups[group.id].enable ?? false
+                            name: 'memberGroups[' ~ group.id ~ '][enabled]',
+                            on: settings.memberGroups[group.id].enabled ?? false
                         }) }}
                     </td>
                     <td>
@@ -95,24 +88,25 @@
 	<h2>Notices</h2>
 
     {{ forms.lightswitchField({
-        label: 'Show Notice Panel',
-        id: 'showNoticePanel',
-        name: 'showNoticePanel',
-        on: settings.showNoticePanel
+        label: 'Show Notice Pane',
+        id: 'showNoticePane',
+        name: 'showNoticePane',
+        on: settings.showNoticePane
     }) }}
 
     {{ forms.textField({
-        label: 'Notice Panel Heading',
-        id: 'noticePanelHeading',
-        name: 'noticePanelHeading',
-        value: settings.noticePanelHeading
+        label: 'Notice Pane Heading',
+        id: 'noticePaneHeading',
+        name: 'noticePaneHeading',
+        value: settings.noticePaneHeading
     }) }}
 
     {{ forms.textareaField({
-        label: 'Notice Panel Text',
-        id: 'noticePanelText',
-        name: 'noticePanelText',
-        value: settings.noticePanelText
+        label: 'Notice Pane Text',
+        id: 'noticePaneText',
+        name: 'noticePaneText',
+        value: settings.noticePaneText,
+        instructions: 'Use <code>{dateFrom}</code> and <code>{dateTo}</code> to display the freeze dates.'
     }) }}
 
     {{ forms.lightswitchField({

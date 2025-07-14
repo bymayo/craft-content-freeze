@@ -11,14 +11,14 @@ use craft\base\Model;
 class Settings extends Model
 {
 
-    public $enable = false;
-    public $dateFrom = '';
-    public $dateTo = '';
-    public $showNoticePanel = true;
-    public $noticePanelHeading = 'Content Freeze';
-    public $noticePanelText = 'Content editing is currently disabled due to a scheduled content freeze. Please try again after the freeze period has ended';
+    public $enabled = false;
+    public $dateFrom = null;
+    public $dateTo = null;
+    public $showNoticePane = true;
+    public $noticePaneHeading = 'Content Freeze';
+    public $noticePaneText = 'Editing is currently paused as part of a scheduled content freeze. Viewing is still available, but changes can’t be made until the freeze is lifted.';
     public $showNoticeBar = true;
-    public $noticeBarText = 'Content editing is currently disabled due to a scheduled content freeze. Please try again after the freeze period has ended';
+    public $noticeBarText = 'Editing is currently paused as part of a scheduled content freeze. Viewing is still available, but changes can’t be made until the freeze is lifted.';
     public $memberGroups = [];
 
 }
