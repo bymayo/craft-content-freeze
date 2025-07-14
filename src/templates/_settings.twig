@@ -30,7 +30,12 @@
 <hr>
 
 {% set memberGroups = craft.app.userGroups.getAllGroups() %}
-{% set contentFreezeGroups = [] %}
+{% set contentFreezeGroups = [
+    {
+        label: 'Select a group',
+        value: null
+    }
+] %}
 {% for memberGroup in memberGroups %}
     {% set contentFreezeGroups = contentFreezeGroups|merge([
         {
@@ -53,6 +58,28 @@
             </tr>
         </thead>
         <tbody>
+            <tr>
+                <td>Admin</td>
+                <td>
+                    {{ forms.lightswitchField({
+                        id: '',
+                        name: 'memberGroups[0][enabled]',
+                        on: settings.memberGroups[0].enabled ?? false
+                    }) }}
+                </td>
+                <td>
+                    {{ forms.selectField({
+                        id: '',
+                        name: 'memberGroups[0][contentFreezeGroup]',
+                        options: contentFreezeGroups,
+                        value: settings.memberGroups[0].contentFreezeGroup ?? null,
+                        warning: 'Choose a unique group for admins that no other group should be moved to.'
+                    }) }}
+                    <a href="{{ url('actions/content-freeze/user-groups/clone-and-redirect', { groupId: null }) }}">
+                        Create &quot;Admin View Only&quot; permissions
+                    </a>
+                </td>
+            </tr>
             {% for group in memberGroups|filter(group => 'Content Freeze' not in group.name) %}
                 <tr>
                     <td>{{ group.name }}</td>

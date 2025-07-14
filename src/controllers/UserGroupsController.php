@@ -19,8 +19,23 @@ class UserGroupsController extends Controller
         
         $this->requirePermission('manageUserGroups');
 
-        $groupId = Craft::$app->request->getQueryParam('groupId');
-        $originalGroup = Craft::$app->userGroups->getGroupById($groupId);
+        if (Craft::$app->request->getQueryParam('groupId') === null) {
+
+            $isAdmin = true;
+
+            $originalGroup = (object) [
+                'id' => 0,
+                'name' => 'Admin',
+                'handle' => 'admin'
+            ];
+
+        }
+        else {
+
+            $groupId = Craft::$app->request->getQueryParam('groupId');
+            $originalGroup = Craft::$app->userGroups->getGroupById($groupId);
+
+        }
 
         if (!$originalGroup) {
             Craft::$app->getSession()->setError('Original group not found.');
@@ -41,19 +56,49 @@ class UserGroupsController extends Controller
         }
 
         // Set view-only permissions based on original group
-        $this->setViewOnlyPermissions($newGroup, $originalGroup);
+        $this->setViewOnlyPermissions($newGroup, $originalGroup, $isAdmin);
 
         Craft::$app->getSession()->setNotice('Group cloned successfully!');
         return $this->redirect('settings/plugins/content-freeze');
     }
 
-    /**
-     * Set view-only permissions for a user group based on original group
-     */
-    private function setViewOnlyPermissions(UserGroup $newGroup, UserGroup $originalGroup): void
+    public function extractPermissionKeys($permissions, &$allKeys) {
+        foreach ($permissions as $key => $value) {
+            // Add the current permission key
+            $allKeys[] = $key;
+            
+            // If this permission has nested permissions, recursively process them
+            if (isset($value['nested']) && is_array($value['nested'])) {
+                $this->extractPermissionKeys($value['nested'], $allKeys);
+            }
+        }
+    }
+
+    public function getAllPermissionKeys($data) {
+        $allKeys = [];
+        
+        foreach ($data as $group) {
+            if (isset($group['permissions']) && is_array($group['permissions'])) {
+                $this->extractPermissionKeys($group['permissions'], $allKeys);
+            }
+        }
+        
+        return array_unique($allKeys);
+    }
+
+
+    private function setViewOnlyPermissions($newGroup, $originalGroup, bool $isAdmin = false): void
     {
         // Get the original group's permissions
-        $originalPermissions = Craft::$app->getUserPermissions()->getPermissionsByGroupId($originalGroup->id);
+
+        if ($isAdmin) {
+
+            $originalPermissions = $this->getAllPermissionKeys(Craft::$app->getUserPermissions()->getAllPermissions());
+
+        }
+        else {
+            $originalPermissions = Craft::$app->getUserPermissions()->getPermissionsByGroupId($originalGroup->id);
+        }
 
         Plugin::log(print_r($originalPermissions, true));
         
@@ -67,7 +112,7 @@ class UserGroupsController extends Controller
                 $viewOnlyPermissions[] = $permission;
             }
 
-            if ($permission === 'commerce-manageorders' || $permission === 'accessplugin-commerce' ) {
+            if ($permission === 'commerce-manageorders' || $permission === 'accessplugin-commerce') {
                 $viewOnlyPermissions[] = $permission;
             }
             
