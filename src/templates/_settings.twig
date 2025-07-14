@@ -1,6 +1,134 @@
-{# @var plugin \bymayo\craftcontentfreeze\Plugin #}
-{# @var settings \bymayo\craftcontentfreeze\models\Settings #}
-
 {% import '_includes/forms.twig' as forms %}
 
-{# ... #}
+{% if craft.app.session.hasFlash('notice') %}
+    <div class="notice">{{ craft.app.session.getFlash('notice') }}</div>
+{% endif %}
+{% if craft.app.session.hasFlash('error') %}
+    <div class="error">{{ craft.app.session.getFlash('error') }}</div>
+{% endif %}
+
+<fieldset>
+
+	<h2>General Plugin Settings</h2>
+
+    {{ forms.lightswitchField({
+        label: 'Enable',
+        id: 'enable',
+        name: 'enable',
+        on: settings.enable
+    }) }}
+
+    {{ forms.dateField({
+        label: 'Freeze From',
+        id: 'dateFrom',
+        name: 'dateFrom',
+        value: settings.dateFrom
+    }) }}
+
+    {{ forms.dateField({
+        label: 'Freeze To',
+        id: 'dateTo',
+        name: 'dateTo',
+        value: settings.dateTo
+    }) }}
+
+ </fieldset>
+
+<hr>
+
+{% set memberGroups = craft.app.userGroups.getAllGroups() %}
+{% set contentFreezeGroups = [] %}
+{% for memberGroup in memberGroups %}
+    {% set contentFreezeGroups = contentFreezeGroups|merge([
+        {
+            label: memberGroup.name,
+            value: memberGroup.id
+        }
+    ]) %}
+{% endfor %}
+
+<fieldset>
+
+	<h2>User Groups</h2>
+
+    <table class="data fullwidth">
+        <thead>
+            <tr>
+                <th>Group Name</th>
+                <th>Freeze</th>
+                <th>Content Freeze Group</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for group in memberGroups|filter(group => 'Content Freeze' not in group.name) %}
+                <tr>
+                    <td>{{ group.name }}</td>
+                    <td>
+                        {{ forms.lightswitchField({
+                            id: '',
+                            name: 'memberGroups[' ~ group.id ~ '][enable]',
+                            on: settings.memberGroups[group.id].enable ?? false
+                        }) }}
+                    </td>
+                    <td>
+                        {{ forms.selectField({
+                            id: '',
+                            name: 'memberGroups[' ~ group.id ~ '][contentFreezeGroup]',
+                            options: contentFreezeGroups,
+                            value: settings.memberGroups[group.id].contentFreezeGroup ?? null
+                        }) }}
+                        <a href="{{ url('actions/content-freeze/user-groups/clone-and-redirect', { groupId: group.id }) }}">
+                            Clone with &quot;View Only&quot; permissions
+                        </a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+</fieldset>
+
+<hr>
+
+<fieldset>
+
+	<h2>Notices</h2>
+
+    {{ forms.lightswitchField({
+        label: 'Show Notice Panel',
+        id: 'showNoticePanel',
+        name: 'showNoticePanel',
+        on: settings.showNoticePanel
+    }) }}
+
+    {{ forms.textField({
+        label: 'Notice Panel Heading',
+        id: 'noticePanelHeading',
+        name: 'noticePanelHeading',
+        value: settings.noticePanelHeading
+    }) }}
+
+    {{ forms.textareaField({
+        label: 'Notice Panel Text',
+        id: 'noticePanelText',
+        name: 'noticePanelText',
+        value: settings.noticePanelText
+    }) }}
+
+    {{ forms.lightswitchField({
+        label: 'Show Notice Bar',
+        id: 'showNoticeBar',
+        name: 'showNoticeBar',
+        on: settings.showNoticeBar
+    }) }}
+
+    {{ forms.textField({
+        label: 'Notice Bar Text',
+        id: 'noticeBarText',
+        name: 'noticeBarText',
+        value: settings.noticeBarText
+    }) }}
+
+ </fieldset>
+
+<hr>
