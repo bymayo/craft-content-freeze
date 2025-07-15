@@ -68,3 +68,4 @@ If you have any issues (Surely not!) then I'll aim to reply to these as soon as 
 - Block front end option/variable e.g. `{% if craft.contentFreeze.enabled %}` useful for hiding forms, or stopping purchases etc
 - CLI command to start freeze
 - More plugin support - Freeform, Formie etc
+- Hide cloned groups in User Groups settings if there are a lot of groups
