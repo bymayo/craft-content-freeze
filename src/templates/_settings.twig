@@ -62,7 +62,7 @@
             {{ _self.configWarning('userGroups') }}
         </p>
     {% endif %}
-    
+
     <table class="data fullwidth">
         <thead>
             <tr>
@@ -96,6 +96,16 @@
                             options: contentFreezeGroups,
                             value: settings.userGroups[group.id].contentFreezeGroup ?? null
                         }) }}
+                    </td>
+                </tr>
+
+            {% else %}
+                <tr>
+                    <td colspan="4">
+                        <p class="warning has-icon">
+                            <span class="icon" aria-hidden="true"></span>
+                            No user groups found. Please create a user group and enable it for this plugin to function correctly.
+                        </p>
                     </td>
                 </tr>
             {% endfor %}
