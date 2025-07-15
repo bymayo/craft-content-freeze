@@ -65,5 +65,6 @@ If you have any issues (Surely not!) then I'll aim to reply to these as soon as 
 - Widget to enable a content freeze from the dashboard
 - Move users via a queue job to fix performance issues with large amounts of users
 - Add a permission for accessing the content freeze settings
-- Block front end option/variable e.g. {% if craft.contentFreeze.enabled %}
+- Block front end option/variable e.g. `{% if craft.contentFreeze.enabled %}` useful for hiding forms, or stopping purchases etc
+- CLI command to start freeze
 - More plugin support - Freeform, Formie etc
