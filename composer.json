@@ -2,7 +2,7 @@
   "name": "bymayo/content-freeze",
   "description": "Allows a content freeze in the CMS",
   "type": "craft-plugin",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "license": "mit",
   "support": {
     "email": "jason@bymayo.co.uk",
