@@ -1,5 +1,9 @@
 {% import '_includes/forms.twig' as forms %}
 
+{% macro configWarning(setting) -%}
+    {{ 'This is being overridden by the `{setting}` config setting.'|t('content-freeze', {setting: setting })|markdown(inlineOnly=true) }}
+{%- endmacro %}
+
 <fieldset>
 
 	<h2>General Plugin Settings</h2>
@@ -8,35 +12,38 @@
         label: 'Enabled',
         id: 'enabled',
         name: 'enabled',
-        on: settings.enabled
+        on: settings.enabled,
+        warning: config.enabled is defined ? _self.configWarning('enabled')
     }) }}
 
     {{ forms.dateField({
         label: 'Date From',
         id: 'dateFrom',
         name: 'dateFrom',
-        value: settings.dateFrom.date ? settings.dateFrom : false
+        value: null,
+        warning: config.dateFrom is defined ? _self.configWarning('dateFrom')
     }) }}
 
     {{ forms.dateField({
         label: 'Date To',
         id: 'dateTo',
         name: 'dateTo',
-        value: settings.dateTo.date ? settings.dateTo : false
+        value: null,
+        warning: config.dateTo is defined ? _self.configWarning('dateTo')
     }) }}
 
  </fieldset>
 
 <hr>
 
-{% set memberGroups = craft.app.userGroups.getAllGroups() %}
+{% set userGroups = craft.app.userGroups.getAllGroups() %}
 {% set contentFreezeGroups = [
     {
         label: 'Select a group',
-        value: null
+        value: ''
     }
 ] %}
-{% for memberGroup in memberGroups %}
+{% for memberGroup in userGroups %}
     {% set contentFreezeGroups = contentFreezeGroups|merge([
         {
             label: memberGroup.name,
@@ -49,57 +56,46 @@
 
 	<h2>User Groups</h2>
 
+    {% if config.userGroups is defined %}
+        <p class="warning has-icon">
+            <span class="icon" aria-hidden="true"></span>
+            {{ _self.configWarning('userGroups') }}
+        </p>
+    {% endif %}
+    
     <table class="data fullwidth">
         <thead>
             <tr>
                 <th>Group Name</th>
-                <th>Freeze</th>
+                <th>Clone</th>
+                <th>Enabled</th>
                 <th>Content Freeze Group</th>
             </tr>
         </thead>
         <tbody>
-            <tr>
-                <td>Admin</td>
-                <td>
-                    {{ forms.lightswitchField({
-                        id: '',
-                        name: 'memberGroups[0][enabled]',
-                        on: settings.memberGroups[0].enabled ?? false
-                    }) }}
-                </td>
-                <td>
-                    {{ forms.selectField({
-                        id: '',
-                        name: 'memberGroups[0][contentFreezeGroup]',
-                        options: contentFreezeGroups,
-                        value: settings.memberGroups[0].contentFreezeGroup ?? null,
-                        warning: 'Choose a unique group for admins that no other group should be moved to.'
-                    }) }}
-                    <a href="{{ url('actions/content-freeze/user-groups/clone-and-redirect', { groupId: null }) }}">
-                        Create &quot;Admin View Only&quot; permissions
-                    </a>
-                </td>
-            </tr>
-            {% for group in memberGroups|filter(group => 'Content Freeze' not in group.name) %}
+            {% for group in userGroups|filter(group => 'Content Freeze' not in group.name) %}
+
                 <tr>
                     <td>{{ group.name }}</td>
                     <td>
+                        <a href="{{ url('actions/content-freeze/user-groups/clone-and-redirect', { groupId: group.id }) }}">
+                            Clone with &quot;View Only&quot; permissions
+                        </a>
+                    </td>
+                    <td>
                         {{ forms.lightswitchField({
                             id: '',
-                            name: 'memberGroups[' ~ group.id ~ '][enabled]',
-                            on: settings.memberGroups[group.id].enabled ?? false
+                            name: 'userGroups[' ~ group.id ~ '][enabled]',
+                            on: settings.userGroups[group.id].enabled ?? false
                         }) }}
                     </td>
                     <td>
                         {{ forms.selectField({
-                            id: '',
-                            name: 'memberGroups[' ~ group.id ~ '][contentFreezeGroup]',
+                            id: 'contentFreezeGroup-' ~ group.id,
+                            name: 'userGroups[' ~ group.id ~ '][contentFreezeGroup]',
                             options: contentFreezeGroups,
-                            value: settings.memberGroups[group.id].contentFreezeGroup ?? null
+                            value: settings.userGroups[group.id].contentFreezeGroup ?? null
                         }) }}
-                        <a href="{{ url('actions/content-freeze/user-groups/clone-and-redirect', { groupId: group.id }) }}">
-                            Clone with &quot;View Only&quot; permissions
-                        </a>
                     </td>
                 </tr>
             {% endfor %}
@@ -118,14 +114,16 @@
         label: 'Show Notice Pane',
         id: 'showNoticePane',
         name: 'showNoticePane',
-        on: settings.showNoticePane
+        on: settings.showNoticePane,
+        warning: config.showNoticePane is defined ? _self.configWarning('showNoticePane')
     }) }}
 
     {{ forms.textField({
         label: 'Notice Pane Heading',
         id: 'noticePaneHeading',
         name: 'noticePaneHeading',
-        value: settings.noticePaneHeading
+        value: settings.noticePaneHeading,
+        warning: config.noticePaneHeading is defined ? _self.configWarning('noticePaneHeading')
     }) }}
 
     {{ forms.textareaField({
@@ -133,21 +131,24 @@
         id: 'noticePaneText',
         name: 'noticePaneText',
         value: settings.noticePaneText,
-        instructions: 'Use <code>{dateFrom}</code> and <code>{dateTo}</code> to display the freeze dates.'
+        instructions: 'Use <code>{dateFrom}</code> and <code>{dateTo}</code> to display the freeze dates.',
+        warning: config.noticePaneText is defined ? _self.configWarning('noticePaneText')
     }) }}
 
     {{ forms.lightswitchField({
         label: 'Show Notice Bar',
         id: 'showNoticeBar',
         name: 'showNoticeBar',
-        on: settings.showNoticeBar
+        on: settings.showNoticeBar,
+        warning: config.showNoticeBar is defined ? _self.configWarning('showNoticeBar')
     }) }}
 
     {{ forms.textField({
         label: 'Notice Bar Text',
         id: 'noticeBarText',
         name: 'noticeBarText',
-        value: settings.noticeBarText
+        value: settings.noticeBarText,
+        warning: config.noticeBarText is defined ? _self.configWarning('noticeBarText')
     }) }}
 
  </fieldset>

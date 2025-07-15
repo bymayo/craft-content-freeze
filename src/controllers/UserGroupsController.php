@@ -19,23 +19,8 @@ class UserGroupsController extends Controller
         
         $this->requirePermission('manageUserGroups');
 
-        if (Craft::$app->request->getQueryParam('groupId') === null) {
-
-            $isAdmin = true;
-
-            $originalGroup = (object) [
-                'id' => 0,
-                'name' => 'Admin',
-                'handle' => 'admin'
-            ];
-
-        }
-        else {
-
-            $groupId = Craft::$app->request->getQueryParam('groupId');
-            $originalGroup = Craft::$app->userGroups->getGroupById($groupId);
-
-        }
+        $groupId = Craft::$app->request->getQueryParam('groupId');
+        $originalGroup = Craft::$app->userGroups->getGroupById($groupId);
 
         if (!$originalGroup) {
             Craft::$app->getSession()->setError('Original group not found.');
@@ -56,7 +41,7 @@ class UserGroupsController extends Controller
         }
 
         // Set view-only permissions based on original group
-        $this->setViewOnlyPermissions($newGroup, $originalGroup, $isAdmin);
+        $this->setViewOnlyPermissions($newGroup, $originalGroup);
 
         Craft::$app->getSession()->setNotice('Group cloned successfully!');
         return $this->redirect('settings/plugins/content-freeze');
@@ -87,23 +72,15 @@ class UserGroupsController extends Controller
     }
 
 
-    private function setViewOnlyPermissions($newGroup, $originalGroup, bool $isAdmin = false): void
+    private function setViewOnlyPermissions(UserGroup $newGroup, UserGroup $originalGroup): void
     {
         // Get the original group's permissions
 
-        if ($isAdmin) {
+        $viewOnlyPermissions = [];
 
-            $originalPermissions = $this->getAllPermissionKeys(Craft::$app->getUserPermissions()->getAllPermissions());
-
-        }
-        else {
-            $originalPermissions = Craft::$app->getUserPermissions()->getPermissionsByGroupId($originalGroup->id);
-        }
+        $originalPermissions = Craft::$app->getUserPermissions()->getPermissionsByGroupId($originalGroup->id);
 
         Plugin::log(print_r($originalPermissions, true));
-        
-        // Build permissions array with a loop
-        $viewOnlyPermissions = [];
         
         foreach ($originalPermissions as $permission) {
 

@@ -14,16 +14,46 @@ use craft\elements\User;
 class UserGroups extends Component
 {
 
-    public function moveUsers($groupFromId, $groupToId)
+    public function moveUsers()
     {
 
-        Plugin::log("Moving users from " . $groupFromId . " to " . $groupToId);
+        $settings = Plugin::getInstance()->getSettings();
+
+        $userGroups = Craft::$app->userGroups->getAllGroups();
+
+        // Member Groups 
+        foreach ($userGroups as $group) {
+
+            $groupSettings = $settings['userGroups'][$group->id] ?? null;
+
+            if ($groupSettings !== null && $groupSettings['enabled']) {
+
+                if ($settings['enabled']) {
+                    $this->assignGroups($group->id, $groupSettings['contentFreezeGroup']);
+                }
+                else {
+                    $this->assignGroups($groupSettings['contentFreezeGroup'], $group->id);
+                }
+
+            }
+
+        }
+
+    }
+
+    public function assignGroups($groupFromId, $groupToId)
+    {
 
         $users = User::find()->groupId($groupFromId)->all();
+        
         foreach ($users as $user) {
+     
+            if (!$user->isInGroup($groupToId)) {
 
-            Craft::$app->getUsers()->assignUserToGroups($user->id, [$groupToId]);
+                Plugin::log("Moving users from " . $groupFromId . " to " . $groupToId);
+                Craft::$app->getUsers()->assignUserToGroups($user->id, [$groupToId]);
 
+            }
         }
     }
 

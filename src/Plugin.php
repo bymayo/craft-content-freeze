@@ -52,8 +52,13 @@ class Plugin extends BasePlugin
         parent::init();
 
         $this->attachEventHandlers();
-        
+
         Craft::$app->onInit(function() {
+
+            $this->log("Moving users");
+
+            $this->userGroups->moveUsers();
+
         });
     }
 
@@ -92,6 +97,7 @@ class Plugin extends BasePlugin
         return Craft::$app->view->renderTemplate('content-freeze/_settings.twig', [
             'plugin' => $this,
             'settings' => $this->getSettings(),
+            'config' => Craft::$app->getConfig()->getConfigFromFile('content-freeze')
         ]);
     }
 
@@ -165,23 +171,7 @@ class Plugin extends BasePlugin
     private function handleSettingsSave($settings): void
     {
 
-        $memberGroups = Craft::$app->userGroups->getAllGroups();
+        $this->userGroups->moveUsers();
 
-        foreach ($memberGroups as $group) {
-
-            $groupSettings = $settings['memberGroups'][$group->id] ?? null;
-
-            if ($groupSettings !== null && $groupSettings['enabled']) {
-
-                if ($settings['enabled']) {
-                    $this->userGroups->moveUsers($group->id, $groupSettings['contentFreezeGroup']);
-                }
-                else {
-                    $this->userGroups->moveUsers($groupSettings['contentFreezeGroup'], $group->id);
-                }
-
-            }
-
-        }
     }
 }
