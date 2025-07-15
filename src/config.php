@@ -1,9 +1,11 @@
 <?php
 
+use craft\helpers\App;
+
 return [
 
-    // Enable a content freeze
-    'enabled' => false,
+    // Enable a content freeze, can be set with a env variable e.g. CONTENT_FREEZE_ENABLED=true
+    'enabled' => false, // App::env('CONTENT_FREEZE_ENABLED')
 
     // Date from which the content freeze is active
     'dateFrom' => null,
