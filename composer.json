@@ -1,5 +1,5 @@
 {
-  "name": "bymayo/craft-content-freeze",
+  "name": "bymayo/content-freeze",
   "description": "Allows a content freeze in the CMS",
   "type": "craft-plugin",
   "license": "mit",

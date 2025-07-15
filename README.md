@@ -45,6 +45,11 @@ You can configure the plugin via the plugin settings in the Craft Control Panel.
 
 You can also configure the plugin via the `config.php` file or using `env` vars within the `config.php` file.
 
+## Supported Plugins
+
+- Craft Commerce
+- (More to come)
+
 ## Caveats
 
 1. This plugin does not move admin users. The reason for this is because it can be too risky to block admin users from the CMS. So it's important that all users who can edit content are sorted in to groups - Not just marked as "Admin".
