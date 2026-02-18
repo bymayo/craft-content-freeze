@@ -2,11 +2,11 @@
 
 {% import '_includes/forms.twig' as forms %}
 
-{% set bodyClass = 'licensing-issues' %}
-{% set title = 'License purchase required.'|t('app') %}
+{% set bodyClass = 'content-freeze' %}
+{% set title = settings.noticePaneHeading %}
 
 {% block body %}
-  <div id="licensing-issues" class="pane">
+  <div id="content-freeze-notice" class="pane">
     <div class="readable">
       <h1>
         {{ settings.noticePaneHeading }}
@@ -14,15 +14,15 @@
     <p>
         {{ settings.noticePaneText|replace(
             {
-                '{dateFrom}': settings.dateFrom.date, 
-                '{dateTo}': settings.dateTo.date
+                '{dateFrom}': settings.dateFrom ?? 'N/A',
+                '{dateTo}': settings.dateTo ?? 'N/A'
             }
         ) }}
       </p>
 
       {{ tag('a', {
             class: ['btn', 'link-btn'],
-            href: '/admin',
+            href: cpUrl(''),
             text: 'Continue',
             aria: {label: 'Continue'},
           }) }}

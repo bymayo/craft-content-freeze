@@ -21,7 +21,6 @@ class UserGroups extends Component
 
         $userGroups = Craft::$app->userGroups->getAllGroups();
 
-        // Member Groups 
         foreach ($userGroups as $group) {
 
             $groupSettings = $settings['userGroups'][$group->id] ?? null;
@@ -45,13 +44,18 @@ class UserGroups extends Component
     {
 
         $users = User::find()->groupId($groupFromId)->all();
-        
-        foreach ($users as $user) {
-     
-            if (!$user->isInGroup($groupToId)) {
 
-                Plugin::log("Moving users from " . $groupFromId . " to " . $groupToId);
-                Craft::$app->getUsers()->assignUserToGroups($user->id, [$groupToId]);
+        foreach ($users as $user) {
+
+            $currentGroupIds = array_map(fn($g) => $g->id, $user->getGroups());
+
+            if (!in_array((int) $groupToId, $currentGroupIds)) {
+
+                // Remove from source group, add to target group, preserve others
+                $newGroupIds = array_filter($currentGroupIds, fn($id) => $id != $groupFromId);
+                $newGroupIds[] = (int) $groupToId;
+                $newGroupIds = array_values(array_unique($newGroupIds));
+                Craft::$app->getUsers()->assignUserToGroups($user->id, $newGroupIds);
 
             }
         }

@@ -7,10 +7,7 @@ use bymayo\craftcontentfreeze\models\Settings;
 use bymayo\craftcontentfreeze\services\UserGroups;
 use craft\base\Model;
 use yii\base\Event;
-use craft\events\PluginEvent;
-use craft\base\Plugin as CraftPlugin;
 use craft\base\Plugin as BasePlugin;
-use craft\helpers\FileHelper;
 use yii\web\User;
 use craft\helpers\UrlHelper;
 use craft\web\UrlManager;
@@ -33,13 +30,6 @@ class Plugin extends BasePlugin
     public string $schemaVersion = '1.0.0';
     public bool $hasCpSettings = true;
 
-    public static function log($message)
-    {
-        $file = Craft::getAlias('@storage/logs/content-freeze.log');
-        $log = date('Y-m-d H:i:s'). ' ' . $message . "\n";
-        FileHelper::writeToFile($file, $log, ['append' => true]);
-    }
-
     public static function config(): array
     {
         return [
@@ -52,14 +42,6 @@ class Plugin extends BasePlugin
         parent::init();
 
         $this->attachEventHandlers();
-
-        Craft::$app->onInit(function() {
-
-            $this->log("Moving users");
-
-            $this->userGroups->moveUsers();
-
-        });
     }
 
     /**
@@ -68,14 +50,14 @@ class Plugin extends BasePlugin
     public function getCpNavItems(): array
     {
         $items = parent::getCpNavItems();
-        
+
         // Add controller routes
         $items[] = [
             'url' => 'content-freeze/user-groups',
             'label' => 'User Groups',
             'icon' => '@bymayo/craftcontentfreeze/icon.svg',
         ];
-        
+
         return $items;
     }
 

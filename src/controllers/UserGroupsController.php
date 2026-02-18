@@ -14,12 +14,12 @@ class UserGroupsController extends Controller
 {
     protected array|bool|int $allowAnonymous = false;
 
-    public function actionCloneAndRedirect(): \yii\web\Response
+    public function actionCloneAndRedirect(): Response
     {
-        
+        $this->requirePostRequest();
         $this->requirePermission('manageUserGroups');
 
-        $groupId = Craft::$app->request->getQueryParam('groupId');
+        $groupId = (int) Craft::$app->request->getRequiredBodyParam('groupId');
         $originalGroup = Craft::$app->userGroups->getGroupById($groupId);
 
         if (!$originalGroup) {
@@ -47,44 +47,14 @@ class UserGroupsController extends Controller
         return $this->redirect('settings/plugins/content-freeze');
     }
 
-    public function extractPermissionKeys($permissions, &$allKeys) {
-        foreach ($permissions as $key => $value) {
-            // Add the current permission key
-            $allKeys[] = $key;
-            
-            // If this permission has nested permissions, recursively process them
-            if (isset($value['nested']) && is_array($value['nested'])) {
-                $this->extractPermissionKeys($value['nested'], $allKeys);
-            }
-        }
-    }
-
-    public function getAllPermissionKeys($data) {
-        $allKeys = [];
-        
-        foreach ($data as $group) {
-            if (isset($group['permissions']) && is_array($group['permissions'])) {
-                $this->extractPermissionKeys($group['permissions'], $allKeys);
-            }
-        }
-        
-        return array_unique($allKeys);
-    }
-
-
     private function setViewOnlyPermissions(UserGroup $newGroup, UserGroup $originalGroup): void
     {
-        // Get the original group's permissions
-
         $viewOnlyPermissions = [];
 
         $originalPermissions = Craft::$app->getUserPermissions()->getPermissionsByGroupId($originalGroup->id);
 
-        Plugin::log(print_r($originalPermissions, true));
-        
         foreach ($originalPermissions as $permission) {
 
-            // Keep permissions that start with "view"
             if (strpos($permission, 'view') === 0) {
                 $viewOnlyPermissions[] = $permission;
             }
@@ -92,14 +62,13 @@ class UserGroupsController extends Controller
             if ($permission === 'commerce-manageorders' || $permission === 'accessplugin-commerce') {
                 $viewOnlyPermissions[] = $permission;
             }
-            
+
         }
-        
+
         // Add essential permissions for basic access
         $viewOnlyPermissions[] = 'accessCp';
         $viewOnlyPermissions[] = 'accessSiteWhenSystemIsOff';
-        
-        // Set permissions for the new group
+
         Craft::$app->getUserPermissions()->saveGroupPermissions($newGroup->id, $viewOnlyPermissions);
     }
 
@@ -108,33 +77,29 @@ class UserGroupsController extends Controller
      */
     private function generateHandle(string $name): string
     {
-        // Convert to camelCase
         $handle = strtolower(trim($name));
         $handle = preg_replace('/[^a-z0-9\s]/', '', $handle);
         $handle = preg_replace('/\s+/', ' ', $handle);
         $handle = trim($handle);
-        
-        // Convert to camelCase
+
         $words = explode(' ', $handle);
         $handle = $words[0];
         for ($i = 1; $i < count($words); $i++) {
             $handle .= ucfirst($words[$i]);
         }
-        
-        // Ensure it starts with a letter
+
         if (!preg_match('/^[a-z]/', $handle)) {
             $handle = 'group' . ucfirst($handle);
         }
-        
-        // Ensure uniqueness
+
         $originalHandle = $handle;
         $counter = 1;
-        
+
         while (Craft::$app->userGroups->getGroupByHandle($handle)) {
             $handle = $originalHandle . $counter;
             $counter++;
         }
-        
+
         return $handle;
     }
-} 
+}
