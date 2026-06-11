@@ -54,18 +54,14 @@ You can also install the plugin via the Plugin Store in the Craft Admin CP by se
 
 ## Setup
 
-This plugin works by moving users into a view-only user group while a freeze is in effect (a group with limited permissions - typically "View" or "Manage" only).
+While a freeze is in effect, the plugin moves your editors into a view-only user group, then moves them back when it lifts.
 
-1. Ensure you have at least one user group, and that your content editing users are sorted into groups.
-2. Go to Content Freeze in the CP nav and create a freeze with New freeze.
-3. On the freeze, use the "Clone" button to create a view-only copy of a group (same permissions, view/manage only). You'll be prompted to name the new group.
-4. For each user group, set Move Users To and toggle Enabled (skip groups that don't need CMS access, e.g. "Customers"). A "Move Users To" group can be reused across freezes as long as it's always paired with the same source group - two *different* groups can't share one target, so users restore correctly when the freeze lifts.
-5. Set the freeze's own Enabled toggle, and optionally a Date From / Date To:
-   - No start date = active as soon as it's enabled.
-   - No end date = stays in effect until you disable it.
-6. Optionally, under Notices on the freeze, customise the notice bar/pane for this freeze - leave a field blank to fall back to the plugin default.
-7. While a freeze is in effect you'll see a notice pane/bar in the CMS (if those settings are enabled).
-8. When the freeze ends (or you disable it) users are moved back to their original group.
+1. Sort your content editors into user groups.
+2. Go to Content Freeze in the CP nav and click New freeze.
+3. Use the Clone button to make a view-only copy of a group (you'll be prompted to name it).
+4. For each group, choose a Move Users To group and toggle Enabled (skip groups that don't need CP access, e.g. Customers).
+5. Set the freeze's Enabled toggle, and optionally a Date From / Date To - leave either blank for an open-ended start or end.
+6. Optionally override the notice bar/pane for this freeze under Notices.
 
 Plugin-wide settings are edited under Settings → Plugins → Content Freeze. To set them in code instead, copy the plugin's `src/config.php` to `config/content-freeze.php`.
 
