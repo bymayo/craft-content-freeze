@@ -25,16 +25,6 @@ class ContentFreezeVariable
      */
     public function getEnabled(?DateTimeInterface $now = null): bool
     {
-        return $this->isActive($now);
-    }
-
-    /**
-     * Whether any content freeze is currently in effect (alias of `enabled`).
-     *
-     * `{% if craft.contentFreeze.active %}`
-     */
-    public function isActive(?DateTimeInterface $now = null): bool
-    {
         return Plugin::getInstance()->freezes->getActiveFreezes($now) !== [];
     }
 

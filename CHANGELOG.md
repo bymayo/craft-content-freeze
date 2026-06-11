@@ -13,7 +13,7 @@
 - Dashboard widget listing active and upcoming freezes
 - Back Up Database on Freeze setting - queues a database backup when a freeze becomes active
 - Per-freeze Notify Users by Email option - emails affected users (with CP access) when a freeze is scheduled, becomes active and ends, using editable System Messages
-- `craft.contentFreeze` front-end Twig variable (`enabled`, `active`, `freezes`, `dateRange`) for blocking forms/purchases while frozen
+- `craft.contentFreeze` front-end Twig variable (`enabled`, `freezes`, `dateRange`) for blocking forms/purchases while frozen
 - `php craft content-freeze/run` console command for precise, cron-driven activation
 - The Clone button prompts for the new view-only group's name (prefilled with "X (Content Freeze)")
 - Clone view-only groups keep view/read/access permissions for Commerce, Freeform, Formie, Comments, SEOmatic and Navigation, plus a `viewOnlyKeepPermissions` config setting for other plugins

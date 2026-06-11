@@ -14,14 +14,11 @@ Schedule a freeze (now or for in the future) and the plugin moves the affected u
 - [Install](#install)
 - [Requirements](#requirements)
 - [Setup](#setup)
-  - [Permissions](#permissions)
-  - [Scheduling (cron)](#scheduling-cron)
+- [Permissions](#permissions)
 - [Console commands](#console-commands)
-- [Notices](#notices)
 - [Backups](#backups)
 - [Email notifications](#email-notifications)
 - [Front-end templating](#front-end-templating)
-- [Config](#config)
 - [Supported Plugins](#supported-plugins)
   - [Adding support for other plugins](#adding-support-for-other-plugins)
 - [Caveats](#caveats)
@@ -61,7 +58,7 @@ This plugin works by moving users into a view-only user group while a freeze is 
 
 1. Ensure you have at least one user group, and that your content editing users are sorted into groups.
 2. Go to Content Freeze in the CP nav and create a freeze with New freeze.
-3. On the freeze, use the "Clone" button to create a view-only copy of a group (same permissions, view/manage only). You'll be prompted to name the new group (prefilled with "X (Content Freeze)").
+3. On the freeze, use the "Clone" button to create a view-only copy of a group (same permissions, view/manage only). You'll be prompted to name the new group.
 4. For each user group, set Move Users To and toggle Enabled (skip groups that don't need CMS access, e.g. "Customers"). A "Move Users To" group can be reused across freezes as long as it's always paired with the same source group - two *different* groups can't share one target, so users restore correctly when the freeze lifts.
 5. Set the freeze's own Enabled toggle, and optionally a Date From / Date To:
    - No start date = active as soon as it's enabled.
@@ -70,7 +67,9 @@ This plugin works by moving users into a view-only user group while a freeze is 
 7. While a freeze is in effect you'll see a notice pane/bar in the CMS (if those settings are enabled).
 8. When the freeze ends (or you disable it) users are moved back to their original group.
 
-### Permissions
+Plugin-wide settings are edited under Settings → Plugins → Content Freeze. To set them in code instead, copy the plugin's `src/config.php` to `config/content-freeze.php`.
+
+## Permissions
 
 Access to the Content Freeze section is controlled by the Access Content Freeze permission (under Settings → Users → [group/user] → Permissions). Admins always have access.
 
@@ -79,21 +78,10 @@ Two actions require additional Craft permissions, so a non-admin can't use the p
 - Cloning a view-only group requires the Manage user groups permission.
 - Choosing a Move Users To target requires permission to assign users to that group - only groups you're allowed to assign appear in the dropdown. (Moving users into a group grants them that group's permissions, so this prevents privilege escalation.)
 
-### Scheduling (cron)
-
-Freezes are applied on every CP request, but for scheduled freezes to activate/lift precisely at their start/end times - even when nobody is in the control panel - run the console command on a schedule:
-
-```
-* * * * * php craft content-freeze/run
-* * * * * php craft queue/run
-```
-
-The `queue/run` line ensures the queued user moves actually execute (Craft also runs the queue automatically on web requests).
-
 ## Console commands
 
 ```
-# Reconcile the freeze state for the current time (use on a cron - see above)
+# Reconcile the freeze state for the current time (use on a cron - see below)
 php craft content-freeze/run
 
 # List every freeze with its id, status and window
@@ -108,27 +96,24 @@ php craft content-freeze/freezes/disable <id>
 
 Enabling a freeze respects its schedule - if it has a future Date From, it won't become active until then.
 
-## Notices
+Freezes are applied on every CP request, but for scheduled freezes to activate/lift precisely at their start/end times - even when nobody is in the control panel - run the reconcile command on a schedule:
 
-The notice bar and pane defaults are configured under Settings → Plugins → Content Freeze (or via `config.php`). Each freeze can override the bar/pane under its Notices section - any field left blank falls back to the plugin default.
+```
+* * * * * php craft content-freeze/run
+* * * * * php craft queue/run
+```
 
-When several freezes are active at once, the earliest one's notices are shown. The `{dateFrom}` / `{dateTo}` placeholders work in both the notice pane text and the notice bar text, and reflect that freeze's window.
+The `queue/run` line ensures the queued user moves actually execute (Craft also runs the queue automatically on web requests).
 
 ## Backups
 
-Enable Back Up Database on Freeze (under Settings → Plugins → Content Freeze, or `backupOnFreeze` in `config.php`) to queue a database backup whenever a freeze becomes active. Backups run via the queue and are saved to Craft's `storage/backups` folder. This is a database backup only (not files/assets), and respects Craft's `backupCommand` general config setting.
+Enable Back Up Database on Freeze (under Settings → Plugins → Content Freeze, or `backupOnFreeze` in `config.php`) to queue a database backup when a freeze becomes active. Saved to `storage/backups`; database only (not files).
 
 ## Email notifications
 
-Turn on Notify Users by Email on a freeze to email the affected users (members of that freeze's frozen groups who have control-panel access) at each stage:
+Turn on Notify Users by Email on a freeze to email the affected users (in the frozen groups, with CP access) when it's scheduled, when it starts, and when it ends.
 
-- Scheduled - when a future-dated freeze is saved/enabled
-- Active - when the freeze starts
-- Ended - when the freeze lifts
-
-The email subjects and bodies are editable under Utilities → System Messages (the three "content freeze" messages), with `{{ name }}`, `{{ description }}`, `{{ dateFrom }}`, `{{ dateTo }}` and `{{ user }}` available. Emails are sent via the queue.
-
-As with scheduling, the active/ended emails fire exactly on the freeze's start/end only if `content-freeze/run` is on cron (see [Scheduling](#scheduling-cron)); otherwise they're sent on the next control-panel request after the boundary.
+Edit the wording under Utilities → System Messages (`{{ name }}`, `{{ description }}`, `{{ dateFrom }}`, `{{ dateTo }}` and `{{ user }}` are available).
 
 ## Front-end templating
 
@@ -141,8 +126,6 @@ Is a freeze currently in effect?
     <p>Editing is paused while a content freeze is in effect.</p>
 {% endif %}
 ```
-
-`craft.contentFreeze.active` is an alias of `enabled`, if you prefer it.
 
 Hide a form / block an action while frozen:
 
@@ -170,8 +153,9 @@ Show the freeze window / details:
 
 ```twig
 {% set range = craft.contentFreeze.dateRange %}
-{% if craft.contentFreeze.enabled and range.to %}
-    <p>Editing resumes {{ range.to|datetime('short') }}.</p>
+{% if craft.contentFreeze.enabled %}
+    {% if range.from %}<p>Frozen from {{ range.from|datetime('short') }}</p>{% endif %}
+    {% if range.to %}<p>Editing resumes {{ range.to|datetime('short') }}</p>{% endif %}
 {% endif %}
 
 {# Loop the active freezes for names/dates #}
@@ -184,25 +168,49 @@ Available on `craft.contentFreeze`:
 
 | Property/method | Returns | Notes |
 |---|---|---|
-| `enabled` | `bool` | True if any freeze is in effect right now |
-| `active` | `bool` | Alias of `enabled` |
-| `freezes` | `Freeze[]` | The freezes currently in effect |
-| `dateRange` | `{from, to}` | Combined start/end across active freezes (either may be `null`) |
+| `craft.contentFreeze.enabled` | `bool` | True if any freeze is in effect right now |
+| `craft.contentFreeze.freezes` | `Freeze[]` | The freezes currently in effect (see below) |
+| `craft.contentFreeze.dateRange.from` | `DateTime` or `null` | Earliest start across active freezes |
+| `craft.contentFreeze.dateRange.to` | `DateTime` or `null` | Latest end across active freezes |
 
-## Config
+Each freeze in `.freezes` exposes:
 
-You can configure the default notices and the backup-on-freeze option via the plugin settings in the Craft Control Panel, or via the `config.php` file. Freezes themselves (including any per-freeze notice overrides) are managed under the Content Freeze section (stored in the database, not project config).
+| Property | Returns | Notes |
+|---|---|---|
+| `freeze.name` | `string` | The freeze name |
+| `freeze.description` | `string` | The freeze description (may be empty) |
+| `freeze.dateFrom` | `DateTime` or `null` | Start date, or `null` if open-ended |
+| `freeze.dateTo` | `DateTime` or `null` | End date, or `null` if open-ended |
+| `freeze.enabled` | `bool` | Whether the freeze is enabled |
+| `freeze.status` | `string` | `active`, `scheduled`, `ended` or `disabled` |
+| `freeze.startsIn` | `string` or `null` | Human-readable countdown to start (scheduled freezes) |
+| `freeze.endsIn` | `string` or `null` | Human-readable countdown to end (active freezes) |
 
 ## Supported Plugins
 
-When you use Clone to create a view-only group, Content Freeze keeps Craft's core `view*` permissions plus the view/read/access permissions for these plugins, so frozen users can still *view* (but not edit) their content. Editing/manage/create/delete permissions are intentionally dropped.
+When cloning a view-only group, these plugins' view/read/access permissions are kept (anything that can edit is dropped):
 
-- Craft Commerce - keeps order access (`accessplugin-commerce`, `commerce-manageorders`)
-- Solspace Freeform - keeps forms/submissions access and submission read (`freeform-formsaccess`, `freeform-submissionsaccess`, `freeform-submissionsread`, `freeform-notificationsaccess`)
-- Verbb Formie - keeps forms/submissions access (`formie-accessforms`, `formie-accesssubmissions`, `formie-accesssentnotifications`)
-- Verbb Comments - keeps access to the comments index; moderation (edit/trash/delete) is dropped
-- nystudio107 SEOmatic - keeps the read-only dashboard; the editable meta sections are dropped, so SEO can't be changed while frozen
-- Verbb Navigation - keeps section access only. Navigation has no view-only permission, so individual navs are hidden while frozen
+- Craft Commerce
+  - `accessplugin-commerce`
+  - `commerce-manageorders`
+- Solspace Freeform
+  - `accessplugin-freeform`
+  - `freeform-formsaccess`
+  - `freeform-submissionsaccess`
+  - `freeform-submissionsread`
+  - `freeform-notificationsaccess`
+- Verbb Formie
+  - `accessplugin-formie`
+  - `formie-accessforms`
+  - `formie-accesssubmissions`
+  - `formie-accesssentnotifications`
+- Verbb Comments
+  - `accessplugin-comments`
+- nystudio107 SEOmatic
+  - `accessplugin-seomatic`
+  - `seomatic:dashboard`
+- Verbb Navigation
+  - `accessplugin-navigation`
 
 ### Adding support for other plugins
 
