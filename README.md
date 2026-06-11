@@ -94,8 +94,6 @@ php craft content-freeze/freezes/enable <id>
 php craft content-freeze/freezes/disable <id>
 ```
 
-Enabling a freeze respects its schedule - if it has a future Date From, it won't become active until then.
-
 Freezes are applied on every CP request, but for scheduled freezes to activate/lift precisely at their start/end times - even when nobody is in the control panel - run the reconcile command on a schedule:
 
 ```
@@ -225,8 +223,12 @@ Any plugin's view/read/access permissions can be preserved by adding their handl
 
 ## Caveats
 
-1. This plugin does not move admin users. The reason for this is because it can be too risky to block admin users from the CMS. So it's important that all users who can edit content are sorted in to groups - Not just marked as "Admin".
-2. Member groups are required to make this plugin function. 
+- **Admins aren't restricted.** Craft's admin flag grants full access regardless of user group, so admins can still edit during a freeze. Make sure anyone who edits content is in a user group, not just flagged as an admin.
+- **User groups are required.** Freezing works by swapping users between groups, so your editors need to be organised into user groups.
+- **The view-only clone is a snapshot.** Clone copies a group's view permissions as they are at that moment - if you change the original group's permissions later, re-clone to pick them up.
+- **One target group per source.** A "Move Users To" group can only belong to one source group, so give each frozen group its own view-only group.
+- **Scheduling needs cron for exact timing.** Without `content-freeze/run` on a cron, scheduled freezes activate and lift on the next control-panel request rather than precisely on time.
+- **User moves run on the queue.** Make sure your queue is running, or there may be a delay before users are actually moved when a freeze starts or ends.
 
 ## Support
 
