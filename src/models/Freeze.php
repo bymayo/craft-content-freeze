@@ -75,15 +75,30 @@ class Freeze extends Model
     }
 
     /**
-     * Ensures every enabled user-group row has a "Move Users To" target chosen.
+     * Ensures at least one user group is enabled, and that every enabled row has
+     * a "Move Users To" target chosen.
      */
     public function validateUserGroups(string $attribute): void
     {
+        $enabledCount = 0;
+        $missingTarget = false;
+
         foreach ($this->userGroups as $config) {
-            if (!empty($config['enabled']) && empty($config['contentFreezeGroup'])) {
-                $this->addError($attribute, Craft::t('content-freeze', 'Choose a “Move Users To” group for each enabled user group.'));
-                return;
+            if (empty($config['enabled'])) {
+                continue;
             }
+
+            $enabledCount++;
+
+            if (empty($config['contentFreezeGroup'])) {
+                $missingTarget = true;
+            }
+        }
+
+        if ($enabledCount === 0) {
+            $this->addError($attribute, Craft::t('content-freeze', 'Enable at least one user group and choose where to move its users.'));
+        } elseif ($missingTarget) {
+            $this->addError($attribute, Craft::t('content-freeze', 'Choose a “Move Users To” group for each enabled user group.'));
         }
     }
 

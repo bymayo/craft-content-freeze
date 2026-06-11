@@ -20,7 +20,8 @@
 
 ### Changed
 - The freeze edit screen is split into General, User Groups and Notices tabs, with error indicators on the tab when a field fails validation
-- Enabled user-group rows require a "Move Users To" group, with an inline error if one isn't chosen
+- A freeze must have at least one enabled user group, and each enabled row requires a "Move Users To" group
+- The freeze list is ordered with active freezes first, then by start date
 - Access is controlled by the Access Content Freeze permission (no longer admin-only)
 - User moves run via a queue job (no more blocking the request)
 - Freezes are stored in the database (not project config)

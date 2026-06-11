@@ -30,8 +30,22 @@ class FreezesController extends Controller
 
     public function actionIndex(): Response
     {
+        $freezes = Plugin::getInstance()->freezes->getAllFreezes();
+
+        // Active freezes first, then ordered by start date (open-ended first).
+        usort($freezes, function (Freeze $a, Freeze $b) {
+            $aActive = $a->getStatus() === Freeze::STATUS_ACTIVE;
+            $bActive = $b->getStatus() === Freeze::STATUS_ACTIVE;
+
+            if ($aActive !== $bActive) {
+                return $aActive ? -1 : 1;
+            }
+
+            return ($a->dateFrom?->getTimestamp() ?? PHP_INT_MIN) <=> ($b->dateFrom?->getTimestamp() ?? PHP_INT_MIN);
+        });
+
         return $this->renderTemplate('content-freeze/freezes/_index', [
-            'freezes' => Plugin::getInstance()->freezes->getAllFreezes(),
+            'freezes' => $freezes,
         ]);
     }
 

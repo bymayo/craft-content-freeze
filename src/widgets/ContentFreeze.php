@@ -60,10 +60,13 @@ class ContentFreeze extends Widget
             }
         }
 
-        // Soonest-starting upcoming freeze first.
-        usort($upcoming, fn(Freeze $a, Freeze $b) =>
-            ($a->dateFrom?->getTimestamp() ?? PHP_INT_MAX) <=> ($b->dateFrom?->getTimestamp() ?? PHP_INT_MAX)
-        );
+        // Order each group by start date (open-ended first), matching the freeze
+        // index. Active freezes render before upcoming ones in the template.
+        $byDateFrom = fn(Freeze $a, Freeze $b) =>
+            ($a->dateFrom?->getTimestamp() ?? PHP_INT_MIN) <=> ($b->dateFrom?->getTimestamp() ?? PHP_INT_MIN);
+
+        usort($active, $byDateFrom);
+        usort($upcoming, $byDateFrom);
 
         return Craft::$app->getView()->renderTemplate('content-freeze/_widget/body', [
             'active' => $active,

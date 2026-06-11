@@ -31,6 +31,14 @@
         {%- if canManageUserGroups %} Use &ldquo;Clone&rdquo; to create a view-only version of a group.{% endif %}
     </p>
 
+    {% if freeze.getErrors('userGroups') %}
+        <ul class="errors">
+            {% for error in freeze.getErrors('userGroups') %}
+                <li>{{ error }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
     <table class="data fullwidth">
         <thead>
             <tr>

@@ -12,8 +12,7 @@
             {% for freeze in rows %}
                 <tr>
                     <td>
-                        <span class="status {{ freeze.statusColor }}"></span>
-                        <a href="{{ url('content-freeze/' ~ freeze.id) }}">{{- freeze.name }}</a>
+                        <span class="status {{ freeze.statusColor }}"></span><a href="{{ url('content-freeze/' ~ freeze.id) }}">{{ freeze.name }}</a>
                         {%- if freeze.endsIn %} <span class="light">{{ '(Ends in {duration})'|t('content-freeze', { duration: freeze.endsIn }) }}</span>
                         {%- elseif freeze.startsIn %} <span class="light">{{ '(Starts in {duration})'|t('content-freeze', { duration: freeze.startsIn }) }}</span>{% endif %}
                     </td>
