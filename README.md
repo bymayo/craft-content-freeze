@@ -8,19 +8,19 @@ Content Freeze is a Craft CMS plugin that allows you to freeze adding/editing of
 
 ## Features
 
-- Create multiple freezes, each with its own optional schedule (date from/to)
-- Schedule freezes for future dates - they activate and lift automatically
-- See each freeze's live status at a glance, with a "Starts in" / "Ends in" countdown
-- Dashboard widget listing active and upcoming freezes
-- Move users to a view-only group while a freeze is in effect, per user group
-- Show a notice bar at the top of the CMS while a freeze is active
-- Show a notice pane in the CMS once users login during a freeze
-- Set plugin-wide default notices, and optionally override the bar/pane per freeze
-- Optionally queue a database backup when a freeze becomes active
-- Optionally email affected users when a freeze is scheduled, becomes active and ends
-- Block front-end actions while frozen with the `craft.contentFreeze` Twig variable
-- Control access with the Access Content Freeze permission (no longer admin-only)
-- Trigger (enable) or lift (disable) freezes from the command line by ID
+- **Multiple freezes** - Create as many as you need, each with its own optional schedule (date from/to)
+- **Scheduling** - Freezes activate and lift automatically at their start/end times
+- **Live status** - See each freeze's status at a glance, with a "Starts in" / "Ends in" countdown
+- **Dashboard widget** - Lists active and upcoming freezes
+- **View-only access** - Move users into a view-only group per user group while a freeze is in effect
+- **Notice bar** - Show a bar at the top of the CMS while a freeze is active
+- **Notice pane** - Show a full-screen notice when users log in during a freeze
+- **Custom notices** - Set plugin-wide defaults, and optionally override the bar/pane per freeze
+- **Database backups** - Optionally queue a backup when a freeze becomes active
+- **Email notifications** - Optionally email affected users when a freeze is scheduled, becomes active and ends
+- **Front-end variable** - Block front-end actions while frozen with the `craft.contentFreeze` Twig variable
+- **Permissions** - Control access with the Access Content Freeze permission (no longer admin-only)
+- **Console commands** - Trigger (enable) or lift (disable) freezes from the command line by ID
 
 ## Install
 
@@ -200,14 +200,7 @@ Any plugin's view/read/access permissions can be preserved by adding their handl
 
 1. This plugin does not move admin users. The reason for this is because it can be too risky to block admin users from the CMS. So it's important that all users who can edit content are sorted in to groups - Not just marked as "Admin".
 2. Member groups are required to make this plugin function. 
-3. Large amounts of users could potentially cause performance issues (See roadmap)
 
 ## Support
 
 If you have any issues (Surely not!) then I'll aim to reply to these as soon as possible. If it's a site-breaking-oh-no-what-has-happened moment, then hit me up on the Craft CMS Discord - @bymayo
-
-## Roadmap
-
-- Enable/trigger a content freeze directly from the dashboard widget (the widget currently lists active/upcoming freezes)
-- More plugin support - Freeform, Formie etc
-- Hide cloned groups in User Groups settings if there are a lot of groups

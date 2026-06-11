@@ -6,22 +6,22 @@
 > This is a major release that replaces the single global freeze with multiple, schedulable freezes. Your existing freeze configuration is migrated automatically into one freeze record on update. The `CONTENT_FREEZE_ENABLED` env var and the `enabled` / `dateFrom` / `dateTo` / `userGroups` plugin settings have been removed.
 
 ### Added
-- Multiple freezes, managed from a new **Content Freeze** section in the CP - each with its own Enabled toggle, optional Date From/To, Description, and user group mapping
+- Multiple freezes, managed from a new Content Freeze section in the CP - each with its own Enabled toggle, optional Date From/To, Description, and user group mapping
 - Schedule freezes for future dates; they activate and lift automatically
 - Open-ended freezes: leave the start date blank to start immediately, or the end date blank to stay frozen until disabled
 - Per-freeze notice (pane/bar) overrides, falling back to the plugin defaults
 - Dashboard widget listing active and upcoming freezes
-- **Back Up Database on Freeze** setting - queues a database backup when a freeze becomes active
-- Per-freeze **Notify Users by Email** option - emails affected users (with CP access) when a freeze is scheduled, becomes active and ends, using editable System Messages
+- Back Up Database on Freeze setting - queues a database backup when a freeze becomes active
+- Per-freeze Notify Users by Email option - emails affected users (with CP access) when a freeze is scheduled, becomes active and ends, using editable System Messages
 - `craft.contentFreeze` front-end Twig variable (`enabled`, `active`, `freezes`, `dateRange`) for blocking forms/purchases while frozen
 - `php craft content-freeze/run` console command for precise, cron-driven activation
 - The Clone button prompts for the new view-only group's name (prefilled with "X (Content Freeze)")
 - Clone view-only groups keep view/read/access permissions for Commerce, Freeform, Formie, Comments, SEOmatic and Navigation, plus a `viewOnlyKeepPermissions` config setting for other plugins
 
 ### Changed
-- The freeze edit screen is split into **General**, **User Groups** and **Notices** tabs, with error indicators on the tab when a field fails validation
+- The freeze edit screen is split into General, User Groups and Notices tabs, with error indicators on the tab when a field fails validation
 - Enabled user-group rows require a "Move Users To" group, with an inline error if one isn't chosen
-- Access is controlled by the **Access Content Freeze** permission (no longer admin-only)
+- Access is controlled by the Access Content Freeze permission (no longer admin-only)
 - User moves run via a queue job (no more blocking the request)
 - Freezes are stored in the database (not project config)
 - Notices reflect the active freeze window via `{dateFrom}` / `{dateTo}`
