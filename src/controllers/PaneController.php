@@ -13,7 +13,6 @@ use yii\web\Response;
  */
 class PaneController extends Controller
 {
-    public $defaultAction = 'index';
     protected array|int|bool $allowAnonymous = self::ALLOW_ANONYMOUS_NEVER;
 
     /**
@@ -22,10 +21,18 @@ class PaneController extends Controller
     public function actionContentFreeze(): Response
     {
 
-        $settings = Plugin::getInstance()->settings;
+        $notice = Plugin::getInstance()->freezes->getEffectiveNotice();
+
+        // No freeze in effect: nothing to show, send them on to the CP.
+        if ($notice === null) {
+            return $this->redirect('');
+        }
 
         return $this->renderTemplate('content-freeze/_noticePane', [
-            'settings' => $settings,
+            'heading' => $notice['noticePaneHeading'],
+            'text' => $notice['noticePaneText'],
+            'dateFrom' => $notice['dateFrom'],
+            'dateTo' => $notice['dateTo'],
         ]);
 
     }

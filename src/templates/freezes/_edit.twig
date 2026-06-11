@@ -1,0 +1,159 @@
+{% extends '_layouts/cp' %}
+
+{% import '_includes/forms.twig' as forms %}
+
+{% set title = isNew ? 'New Freeze'|t('content-freeze') : freeze.name %}
+{% set fullPageForm = true %}
+
+{% set crumbs = [
+    { label: 'Content Freeze'|t('content-freeze'), url: url('content-freeze') },
+] %}
+
+{% set tabs = {
+    settings: { label: 'General'|t('content-freeze'), url: '#settings', class: (freeze.getErrors('name') or freeze.getErrors('dateTo')) ? 'error' : '' },
+    userGroups: { label: 'User Groups'|t('content-freeze'), url: '#userGroups', class: freeze.getErrors('userGroups') ? 'error' : '' },
+    notices: { label: 'Notices'|t('content-freeze'), url: '#notices' },
+} %}
+
+{% block content %}
+
+    <div id="settings">
+
+        {# Pick one example at random on load to hint at how a freeze might be used. #}
+        {% set freezeExample = random([
+            { name: 'Importing new product catalog', description: 'Loading Season 2 products, so we need to pause all other edits during the import.' },
+            { name: 'Black Friday content lock', description: 'Campaign pages are final. Freezing edits through the sale weekend.' },
+            { name: 'Migrating to the new server', description: 'Moving hosting tonight, so editing is paused to avoid losing changes.' },
+            { name: 'Annual report sign-off', description: 'Content is with legal for approval. No edits until it is signed off.' },
+            { name: 'Rebrand rollout', description: 'Swapping logos and copy site-wide. Editing is paused until the rebrand is live.' }
+        ]) %}
+
+        {{ forms.lightswitchField({
+            label: 'Enabled'|t('content-freeze'),
+            id: 'enabled',
+            name: 'enabled',
+            on: freeze.enabled
+        }) }}
+
+        {{ forms.textField({
+            label: 'Name'|t('content-freeze'),
+            id: 'name',
+            name: 'name',
+            value: freeze.name,
+            required: true,
+            placeholder: isNew ? 'e.g. ' ~ freezeExample.name,
+            errors: freeze.getErrors('name')
+        }) }}
+
+        {{ forms.textareaField({
+            label: 'Description'|t('content-freeze'),
+            id: 'description',
+            name: 'description',
+            value: freeze.description,
+            rows: 2,
+            placeholder: isNew ? 'e.g. ' ~ freezeExample.description,
+            errors: freeze.getErrors('description')
+        }) }}
+
+        <div class="flex">
+            <div class="flex-grow">
+                {{ forms.dateTimeField({
+                    label: 'Date From'|t('content-freeze'),
+                    id: 'dateFrom',
+                    name: 'dateFrom',
+                    value: freeze.dateFrom
+                }) }}
+            </div>
+            <div class="flex-grow">
+                {{ forms.dateTimeField({
+                    label: 'Date To'|t('content-freeze'),
+                    id: 'dateTo',
+                    name: 'dateTo',
+                    value: freeze.dateTo,
+                    errors: freeze.getErrors('dateTo')
+                }) }}
+            </div>
+        </div>
+
+        <hr>
+
+        {{ forms.lightswitchField({
+            label: 'Notify Users by Email'|t('content-freeze'),
+            instructions: 'Email affected users when this freeze is scheduled, starts, and ends.'|t('content-freeze'),
+            id: 'notifyUsers',
+            name: 'notifyUsers',
+            on: isNew ? true : freeze.notifyUsers
+        }) }}
+
+    </div>
+
+    <div id="userGroups" class="hidden">
+
+        {% include 'content-freeze/freezes/_groupsTable' %}
+
+    </div>
+
+    <div id="notices" class="hidden">
+
+        <h2>{{ 'Notices'|t('content-freeze') }}</h2>
+
+        <p class="light">
+            {{ 'Override the notice bar and pane content for this freeze. Leave a field blank to use the default configured in the plugin settings.'|t('content-freeze') }}
+        </p>
+
+        {{ forms.lightswitchField({
+            label: 'Show Notice Pane'|t('content-freeze'),
+            id: 'showNoticePane',
+            name: 'showNoticePane',
+            on: isNew ? settings.showNoticePane : freeze.showNoticePane
+        }) }}
+
+        {{ forms.textField({
+            label: 'Notice Pane Heading'|t('content-freeze'),
+            id: 'noticePaneHeading',
+            name: 'noticePaneHeading',
+            value: freeze.noticePaneHeading,
+            placeholder: settings.noticePaneHeading
+        }) }}
+
+        {{ forms.textareaField({
+            label: 'Notice Pane Text'|t('content-freeze'),
+            id: 'noticePaneText',
+            name: 'noticePaneText',
+            value: freeze.noticePaneText,
+            placeholder: settings.noticePaneText,
+            instructions: 'Use <code>{dateFrom}</code> and <code>{dateTo}</code> to display the freeze dates.'|t('content-freeze')
+        }) }}
+
+        {{ forms.lightswitchField({
+            label: 'Show Notice Bar'|t('content-freeze'),
+            id: 'showNoticeBar',
+            name: 'showNoticeBar',
+            on: isNew ? settings.showNoticeBar : freeze.showNoticeBar
+        }) }}
+
+        {{ forms.textField({
+            label: 'Notice Bar Text'|t('content-freeze'),
+            id: 'noticeBarText',
+            name: 'noticeBarText',
+            value: freeze.noticeBarText,
+            placeholder: settings.noticeBarText,
+            instructions: 'Use <code>{dateFrom}</code> and <code>{dateTo}</code> to display the freeze dates.'|t('content-freeze')
+        }) }}
+
+    </div>
+
+    {{ actionInput('content-freeze/freezes/save') }}
+    {{ hiddenInput('freezeId', freeze.id) }}
+    {{ redirectInput('content-freeze') }}
+
+{% endblock %}
+
+{% css %}
+    #settings hr,
+    #userGroups hr,
+    #notices hr {
+        margin-inline: calc(var(--content-pane-padding, 24px) * -1);
+        width: auto;
+    }
+{% endcss %}

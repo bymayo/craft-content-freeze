@@ -1,0 +1,136 @@
+{% import '_includes/forms.twig' as forms %}
+
+{% set canManageUserGroups = currentUser.can('manageUserGroups') %}
+{% set userGroups = craft.app.userGroups.getAllGroups() %}
+{% set contentFreezeGroups = [
+    {
+        label: 'Select a group',
+        value: ''
+    }
+] %}
+{% for memberGroup in userGroups %}
+    {# Only offer groups the user is allowed to assign - moving users in grants that group's permissions. #}
+    {% if currentUser.can('assignUserGroup:' ~ memberGroup.uid) %}
+        {% set contentFreezeGroups = contentFreezeGroups|merge([
+            {
+                label: memberGroup.name,
+                value: memberGroup.id
+            }
+        ]) %}
+    {% endif %}
+{% endfor %}
+
+<fieldset>
+
+	<h2>User Groups</h2>
+
+    <p class="light">
+        For each enabled group, set &ldquo;Move Users To&rdquo; to the group its members should move
+        into during this freeze. Typically, a member group with only view permissions. They&rsquo;re
+        moved back when it&rsquo;s lifted.
+        {%- if canManageUserGroups %} Use &ldquo;Clone&rdquo; to create a view-only version of a group.{% endif %}
+    </p>
+
+    <table class="data fullwidth">
+        <thead>
+            <tr>
+                <th>Enabled</th>
+                <th>User Group</th>
+                <th>Move Users To</th>
+                {% if canManageUserGroups %}<th>Clone</th>{% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for group in userGroups|filter(group => 'Content Freeze' not in group.name) %}
+
+                <tr>
+                    <td>
+                        {{ forms.lightswitchField({
+                            id: '',
+                            name: 'userGroups[' ~ group.id ~ '][enabled]',
+                            on: freeze.userGroups[group.id].enabled ?? false
+                        }) }}
+                    </td>
+                    <td>{{ group.name }}</td>
+                    <td>
+                        {% set freezeGroupOptions = [] %}
+                        {% for option in contentFreezeGroups %}
+                            {% set freezeGroupOptions = freezeGroupOptions|merge([
+                                option|merge({ disabled: option.value == group.id })
+                            ]) %}
+                        {% endfor %}
+                        {% set rowConfig = freeze.userGroups[group.id] ?? {} %}
+                        {% set rowMissingTarget = (rowConfig.enabled ?? false) and not (rowConfig.contentFreezeGroup ?? null) %}
+                        {{ forms.selectField({
+                            id: 'contentFreezeGroup-' ~ group.id,
+                            name: 'userGroups[' ~ group.id ~ '][contentFreezeGroup]',
+                            options: freezeGroupOptions,
+                            value: freeze.userGroups[group.id].contentFreezeGroup ?? null,
+                            errors: rowMissingTarget ? ['Choose a group to move these users to.'|t('content-freeze')] : []
+                        }) }}
+                    </td>
+                    {% if canManageUserGroups %}
+                        <td>
+                            <button type="button" class="btn small" data-content-freeze-clone="{{ group.id }}" data-content-freeze-clone-name="{{ group.name }} (Content Freeze)">
+                                Clone {{ group.name }} group with &quot;View Only&quot; permissions
+                            </button>
+                        </td>
+                    {% endif %}
+                </tr>
+
+            {% else %}
+                <tr>
+                    <td colspan="{{ canManageUserGroups ? 4 : 3 }}">
+                        <p class="warning has-icon">
+                            <span class="icon" aria-hidden="true"></span>
+                            No user groups found. Please create a user group and enable it for this plugin to function correctly.
+                        </p>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+</fieldset>
+
+{% js %}
+// This table is rendered inside Craft's full-page <form>, so the clone action
+// can't use a nested form (the browser drops it and the button ends up
+// submitting the surrounding form instead). Build a detached top-level form on
+// click so the request reaches the clone controller.
+document.querySelectorAll('[data-content-freeze-clone]').forEach(function (button) {
+    button.addEventListener('click', function () {
+        var suggestedName = button.getAttribute('data-content-freeze-clone-name');
+        var name = window.prompt(Craft.t('content-freeze', 'Name for the cloned group:'), suggestedName);
+
+        // Cancelled, or left blank.
+        if (name === null || name.trim() === '') {
+            return;
+        }
+
+        button.disabled = true;
+
+        var form = document.createElement('form');
+        form.method = 'post';
+        form.action = '';
+        form.style.display = 'none';
+
+        var fields = {};
+        fields[Craft.csrfTokenName] = Craft.csrfTokenValue;
+        fields['action'] = 'content-freeze/user-groups/clone-and-redirect';
+        fields['groupId'] = button.getAttribute('data-content-freeze-clone');
+        fields['name'] = name.trim();
+
+        Object.keys(fields).forEach(function (name) {
+            var input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = name;
+            input.value = fields[name];
+            form.appendChild(input);
+        });
+
+        document.body.appendChild(form);
+        form.submit();
+    });
+});
+{% endjs %}

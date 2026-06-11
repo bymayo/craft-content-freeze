@@ -3,30 +3,33 @@
 {% import '_includes/forms.twig' as forms %}
 
 {% set bodyClass = 'content-freeze' %}
-{% set title = settings.noticePaneHeading %}
+{% set title = heading %}
 
 {% block body %}
   <div id="content-freeze-notice" class="pane">
     <div class="readable">
       <h1>
-        {{ settings.noticePaneHeading }}
+        {{ heading }}
       </h1>
-    <p>
-        {{ settings.noticePaneText|replace(
-            {
-                '{dateFrom}': settings.dateFrom ?? 'N/A',
-                '{dateTo}': settings.dateTo ?? 'N/A'
-            }
-        ) }}
+
+      <p>
+        {{ text|replace({
+          '{dateFrom}': dateFrom ? dateFrom|datetime('short'),
+          '{dateTo}': dateTo ? dateTo|datetime('short'),
+        }) }}
       </p>
 
-      {{ tag('a', {
-            class: ['btn', 'link-btn'],
+      <div class="buttons">
+        <div class="flex mb-0">
+          {% set linkText = 'Continue'|t('content-freeze') %}
+          {{ tag('a', {
+            class: ['btn', 'submit'],
             href: cpUrl(''),
-            text: 'Continue',
-            aria: {label: 'Continue'},
+            text: linkText,
+            aria: {label: linkText},
           }) }}
-
+        </div>
+      </div>
     </div>
   </div>
 {% endblock %}
@@ -34,5 +37,24 @@
 {% css %}
   html {
     height: 100%;
+  }
+
+  body.content-freeze {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100%;
+    padding: var(--padding);
+  }
+
+  body.content-freeze #content-freeze-notice {
+    display: flex;
+    flex-direction: row;
+    max-width: 50em;
+  }
+
+  body.content-freeze #content-freeze-notice .buttons {
+    justify-content: space-between;
   }
 {% endcss %}

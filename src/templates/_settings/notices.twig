@@ -1,0 +1,69 @@
+{% import '_includes/forms.twig' as forms %}
+
+{% macro configWarning(setting) -%}
+    {{ 'This is being overridden by the `{setting}` config setting.'|t('content-freeze', {setting: setting })|markdown(inlineOnly=true) }}
+{%- endmacro %}
+
+<fieldset>
+    {{ forms.lightswitchField({
+        label: 'Show Notice Pane',
+        id: 'showNoticePane',
+        name: 'showNoticePane',
+        on: settings.showNoticePane,
+        warning: config.showNoticePane is defined ? _self.configWarning('showNoticePane')
+    }) }}
+
+    {{ forms.textField({
+        label: 'Notice Pane Heading',
+        id: 'noticePaneHeading',
+        name: 'noticePaneHeading',
+        value: settings.noticePaneHeading,
+        warning: config.noticePaneHeading is defined ? _self.configWarning('noticePaneHeading')
+    }) }}
+
+    {{ forms.textareaField({
+        label: 'Notice Pane Text',
+        id: 'noticePaneText',
+        name: 'noticePaneText',
+        value: settings.noticePaneText,
+        instructions: 'Use <code>{dateFrom}</code> and <code>{dateTo}</code> to display the freeze dates.',
+        warning: config.noticePaneText is defined ? _self.configWarning('noticePaneText')
+    }) }}
+
+    <hr class="content-freeze-full-hr">
+
+    {{ forms.lightswitchField({
+        label: 'Show Notice Bar',
+        id: 'showNoticeBar',
+        name: 'showNoticeBar',
+        on: settings.showNoticeBar,
+        warning: config.showNoticeBar is defined ? _self.configWarning('showNoticeBar')
+    }) }}
+
+    {{ forms.textField({
+        label: 'Notice Bar Text',
+        id: 'noticeBarText',
+        name: 'noticeBarText',
+        value: settings.noticeBarText,
+        instructions: 'Use <code>{dateFrom}</code> and <code>{dateTo}</code> to display the freeze dates.',
+        warning: config.noticeBarText is defined ? _self.configWarning('noticeBarText')
+    }) }}
+
+    <hr class="content-freeze-full-hr">
+
+    {{ forms.lightswitchField({
+        label: 'Back Up Database on Freeze',
+        instructions: 'Queue a database backup when a freeze becomes active. Backups are saved to Craft’s storage/backups folder.',
+        id: 'backupOnFreeze',
+        name: 'backupOnFreeze',
+        on: settings.backupOnFreeze,
+        warning: config.backupOnFreeze is defined ? _self.configWarning('backupOnFreeze')
+    }) }}
+
+ </fieldset>
+
+{% css %}
+    .content-freeze-full-hr {
+        margin-inline: calc(var(--padding) * -1);
+    }
+{% endcss %}

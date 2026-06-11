@@ -1,0 +1,27 @@
+{% set rows = active|merge(upcoming) %}
+
+{% if rows|length %}
+    <table class="data fullwidth">
+        <thead>
+            <tr>
+                <th>{{ 'Name'|t('content-freeze') }}</th>
+                <th>{{ 'Description'|t('content-freeze') }}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for freeze in rows %}
+                <tr>
+                    <td>
+                        <span class="status {{ freeze.statusColor }}"></span>
+                        <a href="{{ url('content-freeze/' ~ freeze.id) }}">{{- freeze.name }}</a>
+                        {%- if freeze.endsIn %} <span class="light">{{ '(Ends in {duration})'|t('content-freeze', { duration: freeze.endsIn }) }}</span>
+                        {%- elseif freeze.startsIn %} <span class="light">{{ '(Starts in {duration})'|t('content-freeze', { duration: freeze.startsIn }) }}</span>{% endif %}
+                    </td>
+                    <td>{{ freeze.description ?: '-' }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <p class="light centeralign">{{ 'No active or upcoming content freezes.'|t('content-freeze') }}</p>
+{% endif %}

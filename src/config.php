@@ -1,19 +1,8 @@
 <?php
 
-use craft\helpers\App;
-
 return [
 
-    // Enable a content freeze, can be set with a env variable e.g. CONTENT_FREEZE_ENABLED=true
-    'enabled' => false, // App::env('CONTENT_FREEZE_ENABLED')
-
-    // Date from which the content freeze is active
-    'dateFrom' => null,
-
-    // Date to which the content freeze is active
-    'dateTo' => null,
-
-    // Show the notice pane once users login
+    // Show the notice pane once users login during a freeze
     'showNoticePane' => true,
 
     // Heading of the notice pane
@@ -22,18 +11,25 @@ return [
     // Text of the notice pane
     'noticePaneText' => 'Editing is currently paused as part of a scheduled content freeze. Viewing is still available, but changes can’t be made until the freeze is lifted.',
 
-    // Show the notice bar at the top of the CMS once users login
+    // Show the notice bar at the top of the CMS during a freeze
     'showNoticeBar' => true,
 
     // Text of the notice bar
     'noticeBarText' => 'Editing is currently paused as part of a scheduled content freeze. Viewing is still available, but changes can’t be made until the freeze is lifted.',
 
-    // User groups to move users to when the content freeze is active. The key is the user group id.
-    'userGroups' => [
-        '1' => [
-            'enabled' => false,
-            'contentFreezeGroup' => null
-        ]
-    ]
+    // Queue a database backup when a freeze becomes active
+    'backupOnFreeze' => false,
+
+    // Extra permissions to preserve when cloning a "view only" group, on top of
+    // the built-in support (Craft core, Commerce, Freeform, Formie, Comments,
+    // SEOmatic, Navigation). Add other plugins' view/read/access permission
+    // handles here (lowercase — find them under Settings > Users > Permissions).
+    // For example:
+    //
+    // 'viewOnlyKeepPermissions' => [
+    //     'accessplugin-myplugin',
+    //     'myplugin-viewsomething',
+    // ],
+    'viewOnlyKeepPermissions' => [],
 
 ];

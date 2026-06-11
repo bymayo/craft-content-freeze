@@ -2,63 +2,87 @@
 
 namespace bymayo\craftcontentfreeze\services;
 
-use bymayo\craftcontentfreeze\Plugin;
-
 use Craft;
-use yii\base\Component;
+use craft\db\Query;
+use craft\db\Table;
 use craft\elements\User;
+use yii\base\Component;
 
 /**
  * User Groups service
  */
 class UserGroups extends Component
 {
-
-    public function moveUsers()
+    /**
+     * Moves every member of the source group into the target group, preserving
+     * their other group memberships.
+     */
+    public function assignGroups(int $groupFromId, int $groupToId): void
     {
+        $userGroupsService = Craft::$app->getUserGroups();
 
-        $settings = Plugin::getInstance()->getSettings();
-
-        $userGroups = Craft::$app->userGroups->getAllGroups();
-
-        foreach ($userGroups as $group) {
-
-            $groupSettings = $settings['userGroups'][$group->id] ?? null;
-
-            if ($groupSettings !== null && $groupSettings['enabled']) {
-
-                if ($settings['enabled']) {
-                    $this->assignGroups($group->id, $groupSettings['contentFreezeGroup']);
-                }
-                else {
-                    $this->assignGroups($groupSettings['contentFreezeGroup'], $group->id);
-                }
-
-            }
-
+        // Skip if either group no longer exists (e.g. a target group was deleted
+        // after being mapped) - assigning to a missing group id would error.
+        if (
+            $userGroupsService->getGroupById($groupFromId) === null ||
+            $userGroupsService->getGroupById($groupToId) === null
+        ) {
+            return;
         }
-
-    }
-
-    public function assignGroups($groupFromId, $groupToId)
-    {
 
         $users = User::find()->groupId($groupFromId)->all();
 
+        if (empty($users)) {
+            return;
+        }
+
+        // Fetch every affected user's current group ids in a single query rather
+        // than calling $user->getGroups() (one query per user).
+        $userIds = array_map(fn(User $user) => (int) $user->id, $users);
+        $currentGroupIds = $this->currentGroupIdsByUser($userIds);
+
+        $usersService = Craft::$app->getUsers();
+
         foreach ($users as $user) {
+            $groupIds = $currentGroupIds[(int) $user->id] ?? [];
 
-            $currentGroupIds = array_map(fn($g) => $g->id, $user->getGroups());
-
-            if (!in_array((int) $groupToId, $currentGroupIds)) {
-
-                // Remove from source group, add to target group, preserve others
-                $newGroupIds = array_filter($currentGroupIds, fn($id) => $id != $groupFromId);
-                $newGroupIds[] = (int) $groupToId;
-                $newGroupIds = array_values(array_unique($newGroupIds));
-                Craft::$app->getUsers()->assignUserToGroups($user->id, $newGroupIds);
-
+            if (in_array($groupToId, $groupIds, true)) {
+                continue;
             }
+
+            // Remove from source group, add to target group, preserve others.
+            $newGroupIds = array_filter($groupIds, fn(int $id) => $id !== $groupFromId);
+            $newGroupIds[] = $groupToId;
+            $newGroupIds = array_values(array_unique($newGroupIds));
+
+            $usersService->assignUserToGroups($user->id, $newGroupIds);
         }
     }
 
+    /**
+     * Returns each user's current group ids, keyed by user id, in one query.
+     *
+     * @param int[] $userIds
+     * @return array<int, int[]>
+     */
+    private function currentGroupIdsByUser(array $userIds): array
+    {
+        if (empty($userIds)) {
+            return [];
+        }
+
+        $rows = (new Query())
+            ->select(['userId', 'groupId'])
+            ->from(Table::USERGROUPS_USERS)
+            ->where(['userId' => $userIds])
+            ->all();
+
+        $map = [];
+
+        foreach ($rows as $row) {
+            $map[(int) $row['userId']][] = (int) $row['groupId'];
+        }
+
+        return $map;
+    }
 }

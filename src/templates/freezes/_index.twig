@@ -1,0 +1,105 @@
+{% extends '_layouts/cp' %}
+
+{% set title = 'Content Freeze'|t('content-freeze') %}
+
+{% block actionButton %}
+    <a href="{{ url('content-freeze/new') }}" class="btn submit add icon">
+        {{ 'New freeze'|t('content-freeze') }}
+    </a>
+{% endblock %}
+
+{% block content %}
+
+    {% if freezes|length %}
+
+        <table class="data fullwidth">
+            <thead>
+                <tr>
+                    <th class="thin">{{ 'ID'|t('content-freeze') }}</th>
+                    <th>{{ 'Name'|t('content-freeze') }}</th>
+                    <th>{{ 'Status'|t('content-freeze') }}</th>
+                    <th>{{ 'Groups'|t('content-freeze') }}</th>
+                    <th>{{ 'From'|t('content-freeze') }}</th>
+                    <th>{{ 'To'|t('content-freeze') }}</th>
+                    <th class="thin"></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for freeze in freezes %}
+                    <tr>
+                        <td class="thin">{{ freeze.id }}</td>
+                        <td>
+                            <a href="{{ url('content-freeze/' ~ freeze.id) }}">{{ freeze.name }}</a>
+                        </td>
+                        <td>
+                            <span class="status {{ freeze.statusColor }}"></span>
+                            {{- freeze.statusLabel }}
+                            {%- if freeze.startsIn %} ({{ 'Starts in {duration}'|t('content-freeze', { duration: freeze.startsIn }) }}){% endif %}
+                            {%- if freeze.endsIn %} ({{ 'Ends in {duration}'|t('content-freeze', { duration: freeze.endsIn }) }}){% endif %}
+                        </td>
+                        <td>
+                            {% set frozenGroups = [] %}
+                            {% for sourceId, config in freeze.userGroups|filter(config => config.enabled) %}
+                                {% set source = craft.app.userGroups.getGroupById(sourceId) %}
+                                {% if source %}
+                                    {% set frozenGroups = frozenGroups|merge([source.name]) %}
+                                {% endif %}
+                            {% endfor %}
+                            {{ frozenGroups|length ? frozenGroups|join(', ') : '-' }}
+                        </td>
+                        <td>{{ freeze.dateFrom ? freeze.dateFrom|datetime('short') : '-' }}</td>
+                        <td>{{ freeze.dateTo ? freeze.dateTo|datetime('short') : '-' }}</td>
+                        <td class="thin">
+                            <button type="button" class="delete icon" title="{{ 'Delete'|t('content-freeze') }}" data-content-freeze-delete="{{ freeze.id }}"{% if freeze.status == 'active' %} data-content-freeze-active="1"{% endif %}></button>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+    {% else %}
+
+        <div class="zilch">
+            <p>{{ 'No freezes yet - create one to temporarily pause content editing.'|t('content-freeze') }}</p>
+        </div>
+
+    {% endif %}
+
+{% endblock %}
+
+{% js %}
+document.querySelectorAll('[data-content-freeze-delete]').forEach(function (button) {
+    button.addEventListener('click', function () {
+        var message = button.getAttribute('data-content-freeze-active')
+            ? Craft.t('content-freeze', 'This freeze is active. Deleting it will move the affected users back to their original groups. Continue?')
+            : Craft.t('content-freeze', 'Are you sure you want to delete this freeze?');
+
+        if (!confirm(message)) {
+            return;
+        }
+
+        button.disabled = true;
+
+        var form = document.createElement('form');
+        form.method = 'post';
+        form.action = '';
+        form.style.display = 'none';
+
+        var fields = {};
+        fields[Craft.csrfTokenName] = Craft.csrfTokenValue;
+        fields['action'] = 'content-freeze/freezes/delete';
+        fields['id'] = button.getAttribute('data-content-freeze-delete');
+
+        Object.keys(fields).forEach(function (name) {
+            var input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = name;
+            input.value = fields[name];
+            form.appendChild(input);
+        });
+
+        document.body.appendChild(form);
+        form.submit();
+    });
+});
+{% endjs %}
