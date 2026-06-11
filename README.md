@@ -221,6 +221,7 @@ Any plugin's view/read/access permissions can be preserved by adding their handl
 
 - **Admins aren't restricted.** Craft's admin flag grants full access regardless of user group, so admins can still edit during a freeze. Make sure anyone who edits content is in a user group, not just flagged as an admin.
 - **User groups are required.** Freezing works by swapping users between groups, so your editors need to be organised into user groups.
+- **Permissions must come from groups, not individual users.** A freeze only changes a user's group, so it only affects permissions granted through a group. If you've assigned edit permissions directly to a user (rather than via a group), those stay in place during a freeze and that user can keep editing. Make sure editors get their permissions from a user group.
 - **The view-only clone is a snapshot.** Clone copies a group's view permissions as they are at that moment - if you change the original group's permissions later, re-clone to pick them up.
 - **One target group per source.** A "Move Users To" group can only belong to one source group, so give each frozen group its own view-only group.
 - **Scheduling needs cron for exact timing.** Without `content-freeze/run` on a cron, scheduled freezes activate and lift on the next control-panel request rather than precisely on time.

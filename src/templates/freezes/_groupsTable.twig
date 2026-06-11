@@ -59,7 +59,11 @@
                             on: freeze.userGroups[group.id].enabled ?? false
                         }) }}
                     </td>
-                    <td>{{ group.name }}</td>
+                    <td>
+                        {{ group.name }}
+                        {% set userCount = craft.users.groupId(group.id).count() %}
+                        <span class="light">{{ '({n, plural, =1{1 user} other{# users}})'|t('content-freeze', { n: userCount }) }}</span>
+                    </td>
                     <td>
                         {% set freezeGroupOptions = [] %}
                         {% for option in contentFreezeGroups %}

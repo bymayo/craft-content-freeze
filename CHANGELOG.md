@@ -1,6 +1,6 @@
 # Release Notes for Content Freeze
 
-## 2.0.0 - 2026-06-11
+## Unreleased
 
 > [!WARNING]
 > This is a major release that replaces the single global freeze with multiple, schedulable freezes. Your existing freeze configuration is migrated automatically into one freeze record on update. The `CONTENT_FREEZE_ENABLED` env var and the `enabled` / `dateFrom` / `dateTo` / `userGroups` plugin settings have been removed.
@@ -20,6 +20,7 @@
 
 ### Changed
 - The freeze edit screen is split into General, User Groups and Notices tabs, with error indicators on the tab when a field fails validation
+- The user groups table shows how many users are in each group, so you can see how many will be moved before enabling
 - A freeze must have at least one enabled user group, and each enabled row requires a "Move Users To" group
 - The freeze list is ordered with active freezes first, then by start date
 - Access is controlled by the Access Content Freeze permission (no longer admin-only)
