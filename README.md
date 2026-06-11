@@ -6,20 +6,37 @@ Content Freeze is a Craft CMS plugin that allows you to freeze adding/editing of
 
 <img src="https://raw.githubusercontent.com/bymayo/craft-content-freeze/craft-5/resources/screenshot.png" width="850">
 
+## Contents
+
+- [Features](#features)
+- [Install](#install)
+- [Requirements](#requirements)
+- [Setup](#setup)
+  - [Permissions](#permissions)
+  - [Scheduling (cron)](#scheduling-cron)
+- [Console commands](#console-commands)
+- [Notices](#notices)
+- [Backups](#backups)
+- [Email notifications](#email-notifications)
+- [Front-end templating](#front-end-templating)
+- [Config](#config)
+- [Supported Plugins](#supported-plugins)
+  - [Adding support for other plugins](#adding-support-for-other-plugins)
+- [Caveats](#caveats)
+- [Support](#support)
+
 ## Features
 
 - **Multiple freezes** - Create as many as you need, each with its own optional schedule (date from/to)
 - **Scheduling** - Freezes activate and lift automatically at their start/end times
-- **Live status** - See each freeze's status at a glance, with a "Starts in" / "Ends in" countdown
 - **Dashboard widget** - Lists active and upcoming freezes
-- **View-only access** - Move users into a view-only group per user group while a freeze is in effect
 - **Notice bar** - Show a bar at the top of the CMS while a freeze is active
 - **Notice pane** - Show a full-screen notice when users log in during a freeze
 - **Custom notices** - Set plugin-wide defaults, and optionally override the bar/pane per freeze
 - **Database backups** - Optionally queue a backup when a freeze becomes active
 - **Email notifications** - Optionally email affected users when a freeze is scheduled, becomes active and ends
 - **Front-end variable** - Block front-end actions while frozen with the `craft.contentFreeze` Twig variable
-- **Permissions** - Control access with the Access Content Freeze permission (no longer admin-only)
+- **Permissions** - Control access with the Access Content Freeze permission
 - **Console commands** - Trigger (enable) or lift (disable) freezes from the command line by ID
 
 ## Install
