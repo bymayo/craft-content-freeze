@@ -2,7 +2,9 @@
 
 # Content Freeze for Craft CMS 5
 
-Content Freeze is a Craft CMS plugin that allows you to freeze adding/editing of content for users within the CMS so you can schedule server transfers, major updates etc without content between environments being lost.
+Content Freeze lets you temporarily pause content editing in the Craft control panel, so changes can't be made while you carry out work that edits could otherwise clash with or be lost during — moving hosting, migrating content between environments, running a major update, or locking everything down ahead of a launch.
+
+Rather than relying on everyone to remember not to touch anything, you schedule a freeze (active now, or for a future window) and the plugin moves the affected user groups into a view-only copy of their group for the duration, then restores them automatically when it lifts. You can warn editors with an on-screen notice bar and a full-screen pane, email them when a freeze is scheduled, starts and ends, and optionally take a database backup the moment a freeze begins.
 
 <img src="https://raw.githubusercontent.com/bymayo/craft-content-freeze/craft-5/resources/screenshot.png" width="850">
 
