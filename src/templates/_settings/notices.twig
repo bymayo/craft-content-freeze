@@ -26,7 +26,7 @@
         id: 'noticePaneText',
         name: 'noticePaneText',
         value: settings.noticePaneText,
-        instructions: 'Use <code>{dateFrom}</code> and <code>{dateTo}</code> to display the freeze dates.',
+        instructions: 'Use <code>{dateFrom}</code> and <code>{dateTo}</code> to display the freeze dates, and <code>{remaining}</code> for how long is left (e.g. “3 hours”).',
         warning: config.noticePaneText is defined ? _self.configWarning('noticePaneText')
     }) }}
 
@@ -45,7 +45,7 @@
         id: 'noticeBarText',
         name: 'noticeBarText',
         value: settings.noticeBarText,
-        instructions: 'Use <code>{dateFrom}</code> and <code>{dateTo}</code> to display the freeze dates.',
+        instructions: 'Use <code>{dateFrom}</code> and <code>{dateTo}</code> to display the freeze dates, and <code>{remaining}</code> for how long is left (e.g. “3 hours”).',
         warning: config.noticeBarText is defined ? _self.configWarning('noticeBarText')
     }) }}
 

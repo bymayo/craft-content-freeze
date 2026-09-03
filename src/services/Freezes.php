@@ -198,6 +198,78 @@ class Freezes extends Component
     }
 
     /**
+     * Replaces the notice tokens in a pane/bar message with the freeze's own
+     * window: {dateFrom}, {dateTo} and {remaining} (e.g. "3 hours"). Open-ended
+     * freezes fall back to wording that still reads as a sentence.
+     *
+     * @param array{
+     *     showNoticePane: bool,
+     *     noticePaneHeading: string,
+     *     noticePaneText: string,
+     *     showNoticeBar: bool,
+     *     noticeBarText: string,
+     *     dateFrom: ?DateTime,
+     *     dateTo: ?DateTime
+     * } $notice A notice from getEffectiveNotice()
+     */
+    public function formatNoticeText(string $text, array $notice, ?DateTimeInterface $now = null): string
+    {
+        $formatter = Craft::$app->getFormatter();
+
+        return strtr($text, [
+            '{dateFrom}' => $notice['dateFrom'] !== null
+                ? $formatter->asDatetime($notice['dateFrom'], 'short')
+                : Craft::t('content-freeze', 'now'),
+            '{dateTo}' => $notice['dateTo'] !== null
+                ? $formatter->asDatetime($notice['dateTo'], 'short')
+                : Craft::t('content-freeze', 'further notice'),
+            '{remaining}' => $this->getRemainingDuration($notice['dateTo'], $now),
+        ]);
+    }
+
+    /**
+     * How long is left of a freeze, in round terms (e.g. "3 hours"). Only the
+     * largest unit is used, so the notice stays readable - an exact countdown
+     * would be out of date the moment the page renders anyway. Open-ended
+     * freezes have no end to count down to.
+     */
+    private function getRemainingDuration(?DateTimeInterface $dateTo, ?DateTimeInterface $now = null): string
+    {
+        if ($dateTo === null) {
+            return Craft::t('content-freeze', 'a while');
+        }
+
+        $now ??= DateTimeHelper::now();
+        $seconds = $dateTo->getTimestamp() - $now->getTimestamp();
+
+        if ($seconds < 60) {
+            return Craft::t('content-freeze', 'a few moments');
+        }
+
+        // Craft's own translated plural messages, so this follows the CP
+        // language. Each unit is capped just below the next one up, so 59.9
+        // minutes rounds to "59 minutes" rather than "60 minutes".
+        $units = [
+            [604800, null, '{num, number} {num, plural, =1{week} other{weeks}}'],
+            [86400, 6, '{num, number} {num, plural, =1{day} other{days}}'],
+            [3600, 23, '{num, number} {num, plural, =1{hour} other{hours}}'],
+            [60, 59, '{num, number} {num, plural, =1{minute} other{minutes}}'],
+        ];
+
+        foreach ($units as [$unitSeconds, $max, $message]) {
+            if ($seconds >= $unitSeconds) {
+                $num = (int) round($seconds / $unitSeconds);
+
+                return Craft::t('app', $message, [
+                    'num' => $max !== null ? min($num, $max) : $num,
+                ]);
+            }
+        }
+
+        return Craft::t('content-freeze', 'a few moments');
+    }
+
+    /**
      * The desired "source group id => target group id" mapping for the freezes
      * currently in effect. When two active freezes map the same source group to
      * different targets, the earlier freeze wins (deterministic ordering).

@@ -13,10 +13,7 @@
       </h1>
 
       <p>
-        {{ text|replace({
-          '{dateFrom}': dateFrom ? dateFrom|datetime('short'),
-          '{dateTo}': dateTo ? dateTo|datetime('short'),
-        }) }}
+        {{ text }}
       </p>
 
       <div class="buttons">

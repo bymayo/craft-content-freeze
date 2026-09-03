@@ -26,7 +26,9 @@
 - Access is controlled by the Access Content Freeze permission (no longer admin-only)
 - User moves run via a queue job (no more blocking the request)
 - Freezes are stored in the database (not project config)
-- Notices reflect the active freeze window via `{dateFrom}` / `{dateTo}`
+- Notices reflect the active freeze window via `{dateFrom}` / `{dateTo}`, plus a `{remaining}` token for how long is left (e.g. "3 hours")
+- The default notice pane text now includes the freeze window (`from {dateFrom} until {dateTo}`), and the notice bar has its own shorter default counting down with `{remaining}`
+- Open-ended freezes read as "now" / "further notice" / "a while" in place of a missing date
 - A "Move Users To" group can be reused across freezes as long as it's always mapped from the same source group; only a target shared by two *different* source groups is blocked
 - The freeze list is cached per request, and user group reassignment fetches current memberships in a single query
 

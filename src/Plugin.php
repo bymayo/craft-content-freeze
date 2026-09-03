@@ -127,11 +127,7 @@ class Plugin extends BasePlugin
 
                 if ($notice !== null && $notice['showNoticeBar']) {
 
-                    $formatter = Craft::$app->getFormatter();
-                    $content = strtr($notice['noticeBarText'], [
-                        '{dateFrom}' => $notice['dateFrom'] ? $formatter->asDatetime($notice['dateFrom'], 'short') : 'N/A',
-                        '{dateTo}' => $notice['dateTo'] ? $formatter->asDatetime($notice['dateTo'], 'short') : 'N/A',
-                    ]);
+                    $content = $this->freezes->formatNoticeText($notice['noticeBarText'], $notice);
 
                     // Craft renders CP alert content as raw HTML, so escape the
                     // user-supplied notice text to prevent stored XSS.

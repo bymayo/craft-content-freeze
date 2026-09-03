@@ -9,13 +9,13 @@ return [
     'noticePaneHeading' => 'Content Freeze',
 
     // Text of the notice pane
-    'noticePaneText' => 'Editing is currently paused as part of a scheduled content freeze. Viewing is still available, but changes can’t be made until the freeze is lifted.',
+    'noticePaneText' => 'Editing is currently paused as part of a scheduled content freeze, from {dateFrom} until {dateTo}. Viewing is still available, but changes can’t be made until the freeze is lifted.',
 
     // Show the notice bar at the top of the CMS during a freeze
     'showNoticeBar' => true,
 
     // Text of the notice bar
-    'noticeBarText' => 'Editing is currently paused as part of a scheduled content freeze. Viewing is still available, but changes can’t be made until the freeze is lifted.',
+    'noticeBarText' => 'Editing is paused as part of a scheduled content freeze, and will resume in {remaining}.',
 
     // Queue a database backup when a freeze becomes active
     'backupOnFreeze' => false,

@@ -21,7 +21,8 @@ class PaneController extends Controller
     public function actionContentFreeze(): Response
     {
 
-        $notice = Plugin::getInstance()->freezes->getEffectiveNotice();
+        $freezes = Plugin::getInstance()->freezes;
+        $notice = $freezes->getEffectiveNotice();
 
         // No freeze in effect: nothing to show, send them on to the CP.
         if ($notice === null) {
@@ -30,9 +31,7 @@ class PaneController extends Controller
 
         return $this->renderTemplate('content-freeze/_noticePane', [
             'heading' => $notice['noticePaneHeading'],
-            'text' => $notice['noticePaneText'],
-            'dateFrom' => $notice['dateFrom'],
-            'dateTo' => $notice['dateTo'],
+            'text' => $freezes->formatNoticeText($notice['noticePaneText'], $notice),
         ]);
 
     }

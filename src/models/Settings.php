@@ -13,9 +13,9 @@ class Settings extends Model
 
     public bool $showNoticePane = true;
     public string $noticePaneHeading = 'Content Freeze';
-    public string $noticePaneText = 'Editing is currently paused as part of a scheduled content freeze. Viewing is still available, but changes can\'t be made until the freeze is lifted.';
+    public string $noticePaneText = 'Editing is currently paused as part of a scheduled content freeze, from {dateFrom} until {dateTo}. Viewing is still available, but changes can\'t be made until the freeze is lifted.';
     public bool $showNoticeBar = true;
-    public string $noticeBarText = 'Editing is currently paused as part of a scheduled content freeze. Viewing is still available, but changes can\'t be made until the freeze is lifted.';
+    public string $noticeBarText = 'Editing is paused as part of a scheduled content freeze, and will resume in {remaining}.';
 
     /**
      * Whether to queue a database backup when a freeze becomes active.

@@ -31,7 +31,7 @@ Schedule a freeze (now or for in the future) and the plugin moves the affected u
 - **Dashboard widget** - Lists active and upcoming freezes
 - **Notice bar** - Show a bar at the top of the CMS while a freeze is active
 - **Notice pane** - Show a full-screen notice when users log in during a freeze
-- **Custom notices** - Set plugin-wide defaults, and optionally override the bar/pane per freeze
+- **Custom notices** - Set plugin-wide defaults, and optionally override the bar/pane per freeze, with `{dateFrom}`, `{dateTo}` and `{remaining}` tokens
 - **Database backups** - Optionally queue a backup when a freeze becomes active
 - **Email notifications** - Optionally email affected users when a freeze is scheduled, becomes active and ends
 - **Front-end variable** - Block front-end actions while frozen with the `craft.contentFreeze` Twig variable
@@ -73,6 +73,24 @@ Two actions require additional Craft permissions, so a non-admin can't use the p
 
 - Cloning a view-only group requires the Manage user groups permission.
 - Choosing a Move Users To target requires permission to assign users to that group - only groups you're allowed to assign appear in the dropdown. (Moving users into a group grants them that group's permissions, so this prevents privilege escalation.)
+
+## Notices
+
+While a freeze is in effect, editors see a notice bar at the top of the CP and (on login) a full-screen notice pane. Set the default wording under Settings → Plugins → Content Freeze, or override it per freeze under its Notices tab.
+
+Three tokens are available in the bar and pane text:
+
+| Token | Renders | With no date set |
+| --- | --- | --- |
+| `{dateFrom}` | The freeze's start date/time, e.g. `3/9/2026, 09:00` | `now` |
+| `{dateTo}` | The freeze's end date/time, e.g. `5/9/2026, 17:00` | `further notice` |
+| `{remaining}` | How long is left, rounded to the largest unit, e.g. `3 hours` | `a while` |
+
+By default the pane spells out the window (`from {dateFrom} until {dateTo}`) and the bar counts down (`will resume in {remaining}`), but you can mix them however you like:
+
+```
+Editing is paused until {dateTo} - about {remaining} left.
+```
 
 ## Console commands
 
