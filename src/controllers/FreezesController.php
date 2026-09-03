@@ -63,11 +63,7 @@ class FreezesController extends Controller
             }
         }
 
-        return $this->renderTemplate('content-freeze/freezes/_edit', [
-            'freeze' => $freeze,
-            'isNew' => !$freeze->id,
-            'settings' => Plugin::getInstance()->getSettings(),
-        ]);
+        return $this->editResponse($freeze);
     }
 
     public function actionSave(): Response
@@ -111,11 +107,7 @@ class FreezesController extends Controller
                 'groups' => implode(', ', $unauthorized),
             ]));
 
-            return $this->renderTemplate('content-freeze/freezes/_edit', [
-                'freeze' => $freeze,
-                'isNew' => !$freeze->id,
-                'settings' => Plugin::getInstance()->getSettings(),
-            ]);
+            return $this->editResponse($freeze);
         }
 
         // A freeze (target) group must belong to a single source group, across
@@ -128,21 +120,13 @@ class FreezesController extends Controller
                 'groups' => implode(', ', $conflicts),
             ]));
 
-            return $this->renderTemplate('content-freeze/freezes/_edit', [
-                'freeze' => $freeze,
-                'isNew' => !$freeze->id,
-                'settings' => Plugin::getInstance()->getSettings(),
-            ]);
+            return $this->editResponse($freeze);
         }
 
         if (!Plugin::getInstance()->freezes->saveFreeze($freeze)) {
             Craft::$app->getSession()->setError(Craft::t('content-freeze', 'Couldn’t save freeze.'));
 
-            return $this->renderTemplate('content-freeze/freezes/_edit', [
-                'freeze' => $freeze,
-                'isNew' => !$freeze->id,
-                'settings' => Plugin::getInstance()->getSettings(),
-            ]);
+            return $this->editResponse($freeze);
         }
 
         // Apply the change immediately rather than waiting for the next request.
@@ -173,6 +157,25 @@ class FreezesController extends Controller
         Craft::$app->getSession()->setNotice(Craft::t('content-freeze', 'Freeze deleted.'));
 
         return $this->redirect('content-freeze');
+    }
+
+    /**
+     * Renders the freeze edit screen, with everything the form needs: the
+     * plugin defaults behind the notice placeholders, the groups already used as
+     * "Move Users To" targets (so they aren't offered as sources), and the user
+     * count per group.
+     */
+    private function editResponse(Freeze $freeze): Response
+    {
+        $plugin = Plugin::getInstance();
+
+        return $this->renderTemplate('content-freeze/freezes/_edit', [
+            'freeze' => $freeze,
+            'isNew' => !$freeze->id,
+            'settings' => $plugin->getSettings(),
+            'targetGroupIds' => $plugin->freezes->getTargetGroupIds(),
+            'userCounts' => $plugin->userGroups->getUserCountsByGroup(),
+        ]);
     }
 
     /**

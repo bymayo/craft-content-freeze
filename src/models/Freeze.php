@@ -2,6 +2,8 @@
 
 namespace bymayo\craftcontentfreeze\models;
 
+use bymayo\craftcontentfreeze\helpers\Duration;
+
 use Craft;
 use craft\base\Model;
 use craft\helpers\DateTimeHelper;
@@ -157,23 +159,7 @@ class Freeze extends Model
             return null;
         }
 
-        $now ??= DateTimeHelper::now();
-        $interval = $now->diff($this->dateFrom);
-
-        $count = match (true) {
-            $interval->days >= 1 => [$interval->days, 'day'],
-            $interval->h >= 1 => [$interval->h, 'hour'],
-            $interval->i >= 1 => [$interval->i, 'minute'],
-            default => null,
-        };
-
-        if ($count === null) {
-            return Craft::t('content-freeze', 'less than a minute');
-        }
-
-        [$value, $unit] = $count;
-
-        return Craft::t('content-freeze', '{n, plural, =1{1 ' . $unit . '} other{# ' . $unit . 's}}', ['n' => $value]);
+        return $this->durationUntil($this->dateFrom, $now);
     }
 
     /**
@@ -187,23 +173,19 @@ class Freeze extends Model
             return null;
         }
 
+        return $this->durationUntil($this->dateTo, $now);
+    }
+
+    /**
+     * How long until the given date, in the same wording as the `{remaining}`
+     * notice token - the notice bar and this screen describe the same window,
+     * so they go through the same formatter.
+     */
+    private function durationUntil(DateTimeInterface $date, ?DateTimeInterface $now = null): string
+    {
         $now ??= DateTimeHelper::now();
-        $interval = $now->diff($this->dateTo);
 
-        $count = match (true) {
-            $interval->days >= 1 => [$interval->days, 'day'],
-            $interval->h >= 1 => [$interval->h, 'hour'],
-            $interval->i >= 1 => [$interval->i, 'minute'],
-            default => null,
-        };
-
-        if ($count === null) {
-            return Craft::t('content-freeze', 'less than a minute');
-        }
-
-        [$value, $unit] = $count;
-
-        return Craft::t('content-freeze', '{n, plural, =1{1 ' . $unit . '} other{# ' . $unit . 's}}', ['n' => $value]);
+        return Duration::humanize($date->getTimestamp() - $now->getTimestamp());
     }
 
     /**

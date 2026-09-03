@@ -86,6 +86,8 @@ Three tokens are available in the bar and pane text:
 | `{dateTo}` | The freeze's end date/time, e.g. `5/9/2026, 17:00` | `further notice` |
 | `{remaining}` | How long is left, rounded to the largest unit, e.g. `3 hours` | `a while` |
 
+`{remaining}` uses the same wording as the “Ends in …” label on the freeze list and dashboard widget.
+
 By default the pane spells out the window (`from {dateFrom} until {dateTo}`) and the bar counts down (`will resume in {remaining}`), but you can mix them however you like:
 
 ```

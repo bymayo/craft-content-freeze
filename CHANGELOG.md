@@ -1,5 +1,17 @@
 # Release Notes for Content Freeze
 
+## 2.0.2 - 2026-09-03
+
+### Changed
+- The freeze list, dashboard widget and `{remaining}` token now share one duration formatter, so "Ends in ..." and the notice bar always agree (durations round to the nearest unit, and long windows read as weeks)
+- The user groups table hides groups that are already used as a "Move Users To" target, instead of guessing from the group's name - so renamed clones are excluded and legitimately named groups aren't
+- Cloned view-only groups only keep `accessSiteWhenSystemIsOff` if the original group had it
+
+### Fixed
+- The "freeze ended" email went to nobody: it's queued before users are moved back, so it now looks for recipients in both the original and view-only groups
+- Notification emails format their dates in the recipient's Formatting Locale, matching the language Craft sends the message in
+- The freeze edit screen counts users in one query rather than one per group, and user moves no longer load a full element per affected user
+
 ## 2.0.1 - 2026-09-03
 
 ### Added

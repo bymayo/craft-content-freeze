@@ -30,21 +30,22 @@ class UserGroups extends Component
             return;
         }
 
-        $users = User::find()->groupId($groupFromId)->all();
+        // Only the ids are needed, so don't hydrate a full element per user -
+        // a freeze can cover thousands of them.
+        $userIds = array_map('intval', User::find()->groupId($groupFromId)->ids());
 
-        if (empty($users)) {
+        if (empty($userIds)) {
             return;
         }
 
         // Fetch every affected user's current group ids in a single query rather
         // than calling $user->getGroups() (one query per user).
-        $userIds = array_map(fn(User $user) => (int) $user->id, $users);
         $currentGroupIds = $this->currentGroupIdsByUser($userIds);
 
         $usersService = Craft::$app->getUsers();
 
-        foreach ($users as $user) {
-            $groupIds = $currentGroupIds[(int) $user->id] ?? [];
+        foreach ($userIds as $userId) {
+            $groupIds = $currentGroupIds[$userId] ?? [];
 
             if (in_array($groupToId, $groupIds, true)) {
                 continue;
@@ -55,8 +56,40 @@ class UserGroups extends Component
             $newGroupIds[] = $groupToId;
             $newGroupIds = array_values(array_unique($newGroupIds));
 
-            $usersService->assignUserToGroups($user->id, $newGroupIds);
+            $usersService->assignUserToGroups($userId, $newGroupIds);
         }
+    }
+
+    /**
+     * How many users are in each user group, keyed by group id, in one query -
+     * the freeze edit screen shows a count per row, and querying per row would
+     * be one COUNT per group.
+     *
+     * Matches what a `craft.users.groupId(x).count()` would return: enabled,
+     * non-deleted user elements.
+     *
+     * @return array<int, int>
+     */
+    public function getUserCountsByGroup(): array
+    {
+        $rows = (new Query())
+            ->select(['ugu.groupId', 'total' => 'COUNT(*)'])
+            ->from(['ugu' => Table::USERGROUPS_USERS])
+            ->innerJoin(['elements' => Table::ELEMENTS], '[[elements.id]] = [[ugu.userId]]')
+            ->where([
+                'elements.dateDeleted' => null,
+                'elements.enabled' => true,
+            ])
+            ->groupBy(['ugu.groupId'])
+            ->all();
+
+        $counts = [];
+
+        foreach ($rows as $row) {
+            $counts[(int) $row['groupId']] = (int) $row['total'];
+        }
+
+        return $counts;
     }
 
     /**

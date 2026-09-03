@@ -6,7 +6,6 @@ use bymayo\craftcontentfreeze\Plugin;
 
 use Craft;
 use craft\web\Controller;
-use craft\elements\User;
 use craft\models\UserGroup;
 use yii\web\Response;
 
@@ -23,7 +22,7 @@ class UserGroupsController extends Controller
         $originalGroup = Craft::$app->userGroups->getGroupById($groupId);
 
         if (!$originalGroup) {
-            Craft::$app->getSession()->setError('Original group not found.');
+            Craft::$app->getSession()->setError(Craft::t('content-freeze', 'Original group not found.'));
             return $this->redirect(Craft::$app->request->getReferrer() ?: 'content-freeze');
         }
 
@@ -39,16 +38,16 @@ class UserGroupsController extends Controller
         $newGroup->handle = $this->generateHandle($newGroupName);
 
         if (!Craft::$app->userGroups->saveGroup($newGroup)) {
-            $errors = $newGroup->getFirstErrors();
-            $errorMessage = 'Failed to create new group: ' . implode(', ', $errors);
-            Craft::$app->getSession()->setError($errorMessage);
+            Craft::$app->getSession()->setError(Craft::t('content-freeze', 'Couldn’t create the group: {errors}', [
+                'errors' => implode(', ', $newGroup->getFirstErrors()),
+            ]));
             return $this->redirect(Craft::$app->request->getReferrer() ?: 'content-freeze');
         }
 
         // Set view-only permissions based on original group
         $this->setViewOnlyPermissions($newGroup, $originalGroup);
 
-        Craft::$app->getSession()->setNotice('Group cloned successfully!');
+        Craft::$app->getSession()->setNotice(Craft::t('content-freeze', 'Group cloned.'));
         return $this->redirect(Craft::$app->request->getReferrer() ?: 'content-freeze');
     }
 
@@ -106,9 +105,14 @@ class UserGroupsController extends Controller
             }
         }
 
-        // Add essential permissions for basic access
+        // The clone exists to give frozen users read-only CP access, so it always
+        // needs accessCp. Everything else is only carried over if the original
+        // group had it - the clone should never grant more than it started with.
         $viewOnlyPermissions[] = 'accessCp';
-        $viewOnlyPermissions[] = 'accessSiteWhenSystemIsOff';
+
+        if (in_array('accesssitewhensystemisoff', array_map('strtolower', $originalPermissions), true)) {
+            $viewOnlyPermissions[] = 'accessSiteWhenSystemIsOff';
+        }
 
         Craft::$app->getUserPermissions()->saveGroupPermissions($newGroup->id, $viewOnlyPermissions);
     }

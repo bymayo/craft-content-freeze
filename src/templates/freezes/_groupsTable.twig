@@ -2,6 +2,10 @@
 
 {% set canManageUserGroups = currentUser.can('manageUserGroups') %}
 {% set userGroups = craft.app.userGroups.getAllGroups() %}
+{# Groups already used as a "Move Users To" target elsewhere - they're the
+   view-only groups this plugin moves people into, so they can't be sources. #}
+{% set targetGroupIds = targetGroupIds ?? [] %}
+{% set userCounts = userCounts ?? {} %}
 {% set contentFreezeGroups = [
     {
         label: 'Select a group',
@@ -49,7 +53,9 @@
             </tr>
         </thead>
         <tbody>
-            {% for group in userGroups|filter(group => 'Content Freeze' not in group.name) %}
+            {# A group already mapped by this freeze stays listed even if it's since
+               been used as a target elsewhere, so saving can't drop its row. #}
+            {% for group in userGroups|filter(group => group.id not in targetGroupIds or freeze.userGroups[group.id] is defined) %}
 
                 <tr>
                     <td>
@@ -61,8 +67,7 @@
                     </td>
                     <td>
                         {{ group.name }}
-                        {% set userCount = craft.users.groupId(group.id).count() %}
-                        <span class="light">{{ '({n, plural, =1{1 user} other{# users}})'|t('content-freeze', { n: userCount }) }}</span>
+                        <span class="light">{{ '({n, plural, =1{1 user} other{# users}})'|t('content-freeze', { n: userCounts[group.id] ?? 0 }) }}</span>
                     </td>
                     <td>
                         {% set freezeGroupOptions = [] %}

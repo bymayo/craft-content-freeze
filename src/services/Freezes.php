@@ -2,6 +2,7 @@
 
 namespace bymayo\craftcontentfreeze\services;
 
+use bymayo\craftcontentfreeze\helpers\Duration;
 use bymayo\craftcontentfreeze\jobs\BackupJob;
 use bymayo\craftcontentfreeze\jobs\MoveUsersJob;
 use bymayo\craftcontentfreeze\jobs\NotifyJob;
@@ -228,10 +229,9 @@ class Freezes extends Component
     }
 
     /**
-     * How long is left of a freeze, in round terms (e.g. "3 hours"). Only the
-     * largest unit is used, so the notice stays readable - an exact countdown
-     * would be out of date the moment the page renders anyway. Open-ended
-     * freezes have no end to count down to.
+     * How long is left of a freeze, in the same wording the freeze list and
+     * dashboard widget use for "Ends in ...". Open-ended freezes have no end to
+     * count down to.
      */
     private function getRemainingDuration(?DateTimeInterface $dateTo, ?DateTimeInterface $now = null): string
     {
@@ -240,33 +240,8 @@ class Freezes extends Component
         }
 
         $now ??= DateTimeHelper::now();
-        $seconds = $dateTo->getTimestamp() - $now->getTimestamp();
 
-        if ($seconds < 60) {
-            return Craft::t('content-freeze', 'a few moments');
-        }
-
-        // Craft's own translated plural messages, so this follows the CP
-        // language. Each unit is capped just below the next one up, so 59.9
-        // minutes rounds to "59 minutes" rather than "60 minutes".
-        $units = [
-            [604800, null, '{num, number} {num, plural, =1{week} other{weeks}}'],
-            [86400, 6, '{num, number} {num, plural, =1{day} other{days}}'],
-            [3600, 23, '{num, number} {num, plural, =1{hour} other{hours}}'],
-            [60, 59, '{num, number} {num, plural, =1{minute} other{minutes}}'],
-        ];
-
-        foreach ($units as [$unitSeconds, $max, $message]) {
-            if ($seconds >= $unitSeconds) {
-                $num = (int) round($seconds / $unitSeconds);
-
-                return Craft::t('app', $message, [
-                    'num' => $max !== null ? min($num, $max) : $num,
-                ]);
-            }
-        }
-
-        return Craft::t('content-freeze', 'a few moments');
+        return Duration::humanize($dateTo->getTimestamp() - $now->getTimestamp());
     }
 
     /**
@@ -311,6 +286,18 @@ class Freezes extends Component
         }
 
         return $universe;
+    }
+
+    /**
+     * Every group used as a "Move Users To" target across all freezes. These are
+     * the view-only groups the plugin moves people into, so they're never
+     * offered as freezable source groups.
+     *
+     * @return int[]
+     */
+    public function getTargetGroupIds(): array
+    {
+        return array_values(array_unique(array_values($this->getSourceGroupUniverse())));
     }
 
     /**
