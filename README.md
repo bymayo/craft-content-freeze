@@ -59,7 +59,7 @@ While a freeze is in effect, the plugin moves your editors into a view-only user
 1. Sort your content editors into user groups.
 2. Go to Content Freeze in the CP nav and click New freeze.
 3. Use the Clone button to make a view-only copy of a group (you'll be prompted to name it).
-4. For each group, choose a Move Users To group and toggle Enabled (skip groups that don't need CP access, e.g. Customers).
+4. For each group, choose a Move Users To group and toggle Enabled (skip groups that don't need CP access, e.g. Customers). The table shows how many users are in each group, so you can see how many will be moved.
 5. Set the freeze's Enabled toggle, and optionally a Date From / Date To - leave either blank for an open-ended start or end.
 6. Optionally override the notice bar/pane for this freeze under Notices.
 

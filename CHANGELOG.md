@@ -1,6 +1,16 @@
 # Release Notes for Content Freeze
 
-## Unreleased
+## 2.0.1 - 2026-09-03
+
+### Added
+- `{remaining}` notice token, showing how long is left of a freeze in round terms (e.g. "3 hours")
+
+### Changed
+- The user groups table shows how many users are in each group, so you can see how many will be moved before enabling
+- The default notice pane text now spells out the freeze window (`from {dateFrom} until {dateTo}`), and the notice bar has its own shorter default counting down with `{remaining}`
+- Open-ended freezes read as "now", "further notice" and "a while" in place of a missing date, rather than "N/A"
+
+## 2.0.0 - 2026-06-11
 
 > [!WARNING]
 > This is a major release that replaces the single global freeze with multiple, schedulable freezes. Your existing freeze configuration is migrated automatically into one freeze record on update. The `CONTENT_FREEZE_ENABLED` env var and the `enabled` / `dateFrom` / `dateTo` / `userGroups` plugin settings have been removed.
@@ -20,15 +30,12 @@
 
 ### Changed
 - The freeze edit screen is split into General, User Groups and Notices tabs, with error indicators on the tab when a field fails validation
-- The user groups table shows how many users are in each group, so you can see how many will be moved before enabling
 - A freeze must have at least one enabled user group, and each enabled row requires a "Move Users To" group
 - The freeze list is ordered with active freezes first, then by start date
 - Access is controlled by the Access Content Freeze permission (no longer admin-only)
 - User moves run via a queue job (no more blocking the request)
 - Freezes are stored in the database (not project config)
-- Notices reflect the active freeze window via `{dateFrom}` / `{dateTo}`, plus a `{remaining}` token for how long is left (e.g. "3 hours")
-- The default notice pane text now includes the freeze window (`from {dateFrom} until {dateTo}`), and the notice bar has its own shorter default counting down with `{remaining}`
-- Open-ended freezes read as "now" / "further notice" / "a while" in place of a missing date
+- Notices reflect the active freeze window via `{dateFrom}` / `{dateTo}`
 - A "Move Users To" group can be reused across freezes as long as it's always mapped from the same source group; only a target shared by two *different* source groups is blocked
 - The freeze list is cached per request, and user group reassignment fetches current memberships in a single query
 
