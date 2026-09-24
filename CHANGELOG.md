@@ -1,5 +1,10 @@
 # Release Notes for Content Freeze
 
+## 2.0.3 - 2026-09-24
+
+### Fixed
+- Installing the plugin from the control panel failed with "Table 'contentfreeze_freezes' doesn't exist", because freezes were reconciled before the Install migration had created the table
+
 ## 2.0.2 - 2026-09-03
 
 ### Changed

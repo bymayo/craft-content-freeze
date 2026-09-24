@@ -63,10 +63,14 @@ class Plugin extends BasePlugin
         // Reconcile on control panel requests so freezes activate/deactivate at
         // their scheduled boundaries even between cron runs. Cheap: it only
         // queues a job when the effective state actually changes.
+        //
+        // `$this->isInstalled` matters: Craft instantiates the plugin (running
+        // init()) before the Install migration creates the freezes table.
         $request = Craft::$app->getRequest();
 
         if (
             Craft::$app->getIsInstalled() &&
+            $this->isInstalled &&
             !$request->getIsConsoleRequest() &&
             $request->getIsCpRequest()
         ) {
