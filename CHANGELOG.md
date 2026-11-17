@@ -1,5 +1,11 @@
 # Release Notes for Content Freeze
 
+## 2.0.4 - 2026-11-17
+
+### Fixed
+- Empty "Applying content freeze user group changes" jobs no longer get queued when no freezes exist
+- The user group move job no longer re-queues daily when the cache expires
+
 ## 2.0.3 - 2026-09-24
 
 ### Fixed

@@ -369,14 +369,24 @@ class Freezes extends Component
             return;
         }
 
+        // Remaining freezes take precedence on key collision; the extras only
+        // fill in sources that are no longer covered by any existing freeze.
+        $universe = $this->getSourceGroupUniverse() + $extraUniverse;
+
         // Set the marker before pushing so a concurrent request short-circuits.
-        $cache->set(self::APPLIED_STATE_CACHE_KEY, $signature);
+        // No expiry (0): otherwise Craft's default cacheDuration drops it daily
+        // and the next CP request queues a redundant move.
+        $cache->set(self::APPLIED_STATE_CACHE_KEY, $signature, 0);
+
+        // Nothing is mapped to a freeze group anywhere, so the job would have
+        // no users to move - don't queue an empty job.
+        if ($universe === []) {
+            return;
+        }
 
         $job = new MoveUsersJob();
         $job->desired = $desired;
-        // Remaining freezes take precedence on key collision; the extras only
-        // fill in sources that are no longer covered by any existing freeze.
-        $job->universe = $this->getSourceGroupUniverse() + $extraUniverse;
+        $job->universe = $universe;
 
         Craft::$app->getQueue()->push($job);
     }
